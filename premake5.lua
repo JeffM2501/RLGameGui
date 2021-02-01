@@ -38,7 +38,7 @@ project "raylib"
 				
 	filter{}
 	
-	location "./raylib/"
+	location "./"
 	language "C++"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
