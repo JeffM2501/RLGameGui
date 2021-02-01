@@ -70,18 +70,18 @@ project "RLGameGui"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
 	
-	includedirs { "raylib/src"}
+	includedirs { "raylib/src","RLGameGui/include/"}
 	vpaths 
 	{
-		["Header Files"] = { "RLGameGui/inclue/**.h"},
-		["Source Files"] = {"raylib/**.cpp"},
+		["Header Files"] = { "RLGameGui/include/**.h"},
+		["Source Files"] = {"RLGameGui/**.cpp"},
 	}
 	files {"RLGameGui/**.h", "RLGameGui/**.cpp"}
 
 
 project "test"
 	kind "ConsoleApp"
-	location "%{wks.name}/"
+	location "test/"
 	language "C++"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
@@ -91,7 +91,7 @@ project "test"
 		["Header Files"] = { "**.h"},
 		["Source Files"] = {"**.c", "**.cpp"},
 	}
-	files {"%{wks.name}/**.c", "%{wks.name}/**.cpp", "%{wks.name}/**.h"}
+	files {"test/**.cpp", "test}/**.h"}
 
 	links {"raylib","RLGameGui"}
 	
