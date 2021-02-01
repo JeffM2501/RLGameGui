@@ -70,10 +70,10 @@ project "RLGameGui"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
 	
-	includedirs { "raylib/src","RLGameGui/include/"}
+	includedirs { "raylib/src","RLGameGui/","RLGameGui/include/"}
 	vpaths 
 	{
-		["Header Files"] = { "RLGameGui/include/**.h"},
+		["Header Files"] = { "RLGameGui/*.h","RLGameGui/include/**.h"},
 		["Source Files"] = {"RLGameGui/**.cpp"},
 	}
 	files {"RLGameGui/**.h", "RLGameGui/**.cpp"}

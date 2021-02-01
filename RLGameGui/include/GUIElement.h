@@ -31,6 +31,8 @@
 #include <vector>
 #include <memory>
 
+#include "raylib.h"
+
 namespace RLGameGUI
 {
 	class GUIElement
@@ -38,15 +40,20 @@ namespace RLGameGUI
 	public:
 		void Update();
 		void Render();
+		void Resize();
 
 		using Ptr = std::shared_ptr<GUIElement>;
 
 		GUIElement::Ptr Parent;
 		std::vector<GUIElement::Ptr> Children;
 
-	protected:
+		Rectangle RelativeRect;
 
+	protected:
 		virtual void OnUpdate() {}
 		virtual void OnRender() {}
+		virtual void OnResize() {}
+
+		virtual Rectangle& GetScreenRect();
 	};
 }

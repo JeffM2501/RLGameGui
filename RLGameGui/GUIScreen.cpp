@@ -27,6 +27,7 @@
 **********************************************************************************************/
 
 #include "GUIScreen.h"
+#include "raylib.h"
 
 namespace RLGameGUI
 {
@@ -49,6 +50,18 @@ namespace RLGameGUI
 
 	void GUIScreen::Update()
 	{
+		if (IsWindowResized())
+		{
+			Root.Resize();
+			for (auto child : Elements)
+				child->Resize();
+		}
 
+		// do input
+
+		// let everyone think
+
+		for (auto child : Elements)
+			child->Update();
 	}
 }

@@ -26,28 +26,22 @@
 *
 **********************************************************************************************/
 
-#include "GUIElement.h"
+#include "RootElement.h"
+#include "raylib.h"
 
 namespace RLGameGUI
 {
-	void GUIElement::Update()
-	{
-		OnUpdate();
-		for (auto child : Children)
-			child->Update();
-	}
+    Rectangle& RootElement::GetScreenRect()
+    {
+        if (ScreenRect.width <= 0 || ScreenRect.height <= 0)
+            OnResize();
 
-	void GUIElement::Resize()
-	{
-        OnResize();
-        for (auto child : Children)
-            child->Resize();
-	}
+        return ScreenRect;
+    }
 
-	void GUIElement::Render()
-	{
-		OnRender();
-		for (auto child : Children)
-			child->Render();
-	}
+    void RootElement::OnResize()
+    {
+        ScreenRect.width = GetScreenWidth();
+        ScreenRect.height = GetScreenHeight();
+    }
 }

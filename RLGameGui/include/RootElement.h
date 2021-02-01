@@ -26,28 +26,18 @@
 *
 **********************************************************************************************/
 
+#pragma once
+
 #include "GUIElement.h"
 
 namespace RLGameGUI
 {
-	void GUIElement::Update()
-	{
-		OnUpdate();
-		for (auto child : Children)
-			child->Update();
-	}
+    class RootElement : public GUIElement
+    {
+    protected:
+        Rectangle& GetScreenRect() override;
+        void OnResize() override;
 
-	void GUIElement::Resize()
-	{
-        OnResize();
-        for (auto child : Children)
-            child->Resize();
-	}
-
-	void GUIElement::Render()
-	{
-		OnRender();
-		for (auto child : Children)
-			child->Render();
-	}
+        Rectangle ScreenRect = { 0,0,0,0 };
+    };
 }

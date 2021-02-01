@@ -29,7 +29,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <memory>
+
+#include "GUIElement.h"
+#include "RootElement.h"
 
 namespace RLGameGUI
 {
@@ -47,8 +51,11 @@ namespace RLGameGUI
 
 		using Ptr = std::shared_ptr<GUIScreen>;
 
+		std::vector<GUIElement::Ptr> Elements;
+
 	protected:
 		bool Active = false;
+		RootElement Root;
 
 		virtual void OnActivate() {}
 		virtual void OnDeactivate() {}
