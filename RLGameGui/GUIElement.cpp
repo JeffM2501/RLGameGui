@@ -56,6 +56,7 @@ namespace RLGameGUI
     GUIElement::Ptr GUIElement::AddChild(GUIElement::Ptr child)
     {
 		child->Parent = this;
+		return child;
     }
 
     void GUIElement::Render()

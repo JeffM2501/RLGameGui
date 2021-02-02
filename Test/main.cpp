@@ -27,10 +27,19 @@
 **********************************************************************************************/
 
 #include "raylib.h"
-
 #include "RLGameGui.h"
 
 void main()
 {
+	InitWindow(1000, 600, "GUI Test");
 
+	while (!WindowShouldClose())
+	{
+
+		BeginDrawing();
+		ClearBackground(RAYWHITE);
+
+		EndDrawing();
+	}
+	CloseWindow();
 }

@@ -26,61 +26,19 @@
 *
 **********************************************************************************************/
 
-#include "GUIManager.h"
+#pragma once
 
-#include <stack>
+#include "GUIElement.h"
+#include "raylib.h"
 
 namespace RLGameGUI
 {
-	namespace Manager
+	class GUIPanel : public GUIElement
 	{
-		std::stack<GUIScreen::Ptr>	ScreenStack;
+	public:
+		Color Tint = WHITE;
 
-		void Update()
-		{
-			auto top = TopScreen();
-			if (top != nullptr)
-				top->Update();
-		}
-
-		void Render()
-		{
-			auto top = TopScreen();
-			if (top == nullptr)
-				return;
-		}
-		
-		void PushScreen(GUIScreen::Ptr screen)
-		{
-			auto top = TopScreen();
-			if (top != nullptr)
-				top->Deactivate();
-
-			ScreenStack.push(screen);
-			screen->Activate();
-		}
-
-		GUIScreen::Ptr PopScreen()
-		{
-			auto top = TopScreen();
-			if (top != nullptr)
-				top->Deactivate();
-
-			ScreenStack.pop();
-
-			top = TopScreen();
-			if (top != nullptr)
-				top->Activate();
-
-			return TopScreen();
-		}
-
-		GUIScreen::Ptr TopScreen()
-		{
-			if (ScreenStack.empty())
-				return nullptr;
-
-			return ScreenStack.top();
-		}
-	}
+	protected:
+		void OnRender() override;
+	};
 }

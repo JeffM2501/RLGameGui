@@ -41,7 +41,7 @@ namespace RLGameGUI
 
     void RootElement::OnResize()
     {
-        ScreenRect.width = GetScreenWidth();
-        ScreenRect.height = GetScreenHeight();
+        ScreenRect.width = (float)GetScreenWidth();
+        ScreenRect.height = (float)GetScreenHeight();
     }
 }

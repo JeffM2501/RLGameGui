@@ -73,6 +73,7 @@ namespace RLGameGUI
 		element->Parent = &Root;
 		Elements.emplace_back(element);
 		OnElementAdd(element);
-    }
 
+		return element;
+    }
 }
