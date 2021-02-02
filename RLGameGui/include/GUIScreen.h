@@ -48,8 +48,10 @@ namespace RLGameGUI
 		void Deactivate();
 
 		void Update();
+		void Render();
 
-		using Ptr = std::shared_ptr<GUIScreen>;
+		typedef std::shared_ptr<GUIScreen> Ptr;
+		inline static Ptr Create() { return std::make_shared<GUIScreen>(); }
 
 		GUIElement::Ptr AddElement(GUIElement::Ptr element);
 
@@ -63,6 +65,7 @@ namespace RLGameGUI
 		virtual void OnActivate() {}
 		virtual void OnDeactivate() {}
 		virtual void OnUpdate() {}
+		virtual void OnRender() {}
 
 		virtual void OnElementAdd(GUIElement::Ptr element) {}
 	};

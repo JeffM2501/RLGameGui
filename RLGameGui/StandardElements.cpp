@@ -35,4 +35,46 @@ namespace RLGameGUI
 	{
 		DrawRectangleRec(GetScreenRect(), Tint);
 	}
+
+    void GUIImage::OnRender()
+    {
+		if (Background.id == 0)
+			DrawRectangleRec(GetScreenRect(), Tint);
+		else
+			DrawTexturePro(Background, RealSourceRect,RealDestRect, Vector2{ 0,0 }, 0, Tint);
+    }
+
+    void GUIImage::OnResize()
+    {
+        if (Background.id == 0)
+            return;
+
+        if (RelativeRect.width == 0 && RelativeRect.height == 0)
+        {
+            RelativeRect.width = ScreenRect.width = (float)Background.width;
+            RelativeRect.height = ScreenRect.height = (float)Background.height;
+        }
+
+        if (SourceRect.width == 0)
+        {
+            SourceRect.width = (float)Background.width;
+            SourceRect.height = (float)Background.height;
+        }
+
+        RealSourceRect = SourceRect;
+        RealDestRect = GetScreenRect();
+
+        if (Clip)
+        {
+            if (RealSourceRect.width < RealDestRect.width)
+                RealDestRect.width = RealSourceRect.width;
+            else if (RealSourceRect.width > RealDestRect.width)
+                RealSourceRect.width = RealDestRect.width;
+
+            if (RealSourceRect.height < RealDestRect.height)
+                RealDestRect.height = RealDestRect.height;
+            else if (RealSourceRect.height > RealDestRect.height)
+                RealSourceRect.height = RealDestRect.height;
+        }
+    }
 }

@@ -68,6 +68,13 @@ namespace RLGameGUI
 			child->Update();
 	}
 
+	void GUIScreen::Render()
+	{
+		OnRender();
+        for (auto child : Elements)
+            child->Render();
+	}
+
     GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)
     {
 		element->Parent = &Root;

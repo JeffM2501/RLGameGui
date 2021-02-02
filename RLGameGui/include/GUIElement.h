@@ -45,7 +45,7 @@ namespace RLGameGUI
 		void Render();
 		void Resize();
 
-		using Ptr = std::shared_ptr<GUIElement>;
+		typedef std::shared_ptr<GUIElement> Ptr;
 
 		GUIElement* Parent = nullptr;
 		std::vector<GUIElement::Ptr> Children;

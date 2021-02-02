@@ -48,6 +48,8 @@ namespace RLGameGUI
 			auto top = TopScreen();
 			if (top == nullptr)
 				return;
+
+			top->Render();
 		}
 		
 		void PushScreen(GUIScreen::Ptr screen)

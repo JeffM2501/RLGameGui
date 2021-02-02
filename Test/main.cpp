@@ -28,17 +28,40 @@
 
 #include "raylib.h"
 #include "RLGameGui.h"
+#include "StandardElements.h"
+
+using namespace RLGameGUI;
 
 void main()
 {
 	InitWindow(1000, 600, "GUI Test");
 
+	Texture2D logo = LoadTexture("resources/raylib_logo.png");
+
+	GUIScreen::Ptr rootScreen = GUIScreen::Create();
+
+	GUIPanel::Ptr panel = GUIPanel::Create();
+	panel->RelativeRect = Rectangle{ 10,10,500,500 };
+	panel->Tint = GRAY;
+	rootScreen->AddElement(panel);
+
+    GUIImage::Ptr panel2 = GUIImage::Create();
+	panel2->RelativeRect = Rectangle{ 10,10,0,0 };
+	panel2->Tint = BLUE;
+	panel2->Background = logo;
+
+	panel->AddChild(panel2);
+
+	Manager::PushScreen(rootScreen);
+
 	while (!WindowShouldClose())
 	{
+		Manager::Update();
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 
+		Manager::Render();
 		EndDrawing();
 	}
 	CloseWindow();

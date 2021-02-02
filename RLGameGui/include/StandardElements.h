@@ -38,7 +38,31 @@ namespace RLGameGUI
 	public:
 		Color Tint = WHITE;
 
+		typedef std::shared_ptr<GUIPanel> Ptr;
+        inline static Ptr Create() { return std::make_shared<GUIPanel>(); }
+
 	protected:
 		void OnRender() override;
 	};
+
+    class GUIImage : public GUIElement
+    {
+    public:
+        Color Tint = WHITE;
+        Texture2D Background = { 0 };
+        Rectangle SourceRect = { 0,0,0,0 };
+
+        bool Clip = false;
+
+        typedef std::shared_ptr<GUIImage> Ptr;
+        inline static Ptr Create() { return std::make_shared<GUIImage>(); }
+
+    protected:
+        void OnRender() override;
+        void OnResize() override;
+
+        Rectangle RealSourceRect = { 0 };
+        Rectangle RealDestRect = { 0 };
+
+    };
 }
