@@ -39,15 +39,35 @@ namespace RLGameGUI
 
 	void GUIElement::Resize()
 	{
+		if (Parent != nullptr)
+		{
+			Rectangle& parrentRect = Parent->GetScreenRect();
+			ScreenRect.x = parrentRect.x + RelativeRect.x;
+			ScreenRect.y = parrentRect.y + RelativeRect.y;
+			ScreenRect.width = RelativeRect.width;
+			ScreenRect.height = RelativeRect.height;
+		}
+
         OnResize();
         for (auto child : Children)
             child->Resize();
 	}
 
-	void GUIElement::Render()
+    GUIElement::Ptr GUIElement::AddChild(GUIElement::Ptr child)
+    {
+		child->Parent = this;
+    }
+
+    void GUIElement::Render()
 	{
 		OnRender();
 		for (auto child : Children)
 			child->Render();
 	}
+
+	Rectangle& GUIElement::GetScreenRect()
+	{
+		return ScreenRect;
+	}
+
 }

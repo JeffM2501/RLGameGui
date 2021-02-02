@@ -51,14 +51,19 @@ namespace RLGameGUI
 
 		using Ptr = std::shared_ptr<GUIScreen>;
 
-		std::vector<GUIElement::Ptr> Elements;
+		GUIElement::Ptr AddElement(GUIElement::Ptr element);
 
 	protected:
 		bool Active = false;
 		RootElement Root;
+        std::vector<GUIElement::Ptr> Elements;
+
+		void DoResize();
 
 		virtual void OnActivate() {}
 		virtual void OnDeactivate() {}
 		virtual void OnUpdate() {}
+
+		virtual void OnElementAdd(GUIElement::Ptr element) {}
 	};
 }

@@ -39,6 +39,7 @@ namespace RLGameGUI
 	void GUIScreen::Activate()
 	{
 		Active = true;
+		DoResize();
 		OnActivate();
 	}
 
@@ -48,20 +49,30 @@ namespace RLGameGUI
 		OnDeactivate();
 	}
 
+	void GUIScreen::DoResize()
+    {
+        Root.Resize();
+        for (auto child : Elements)
+            child->Resize();
+	}
+
 	void GUIScreen::Update()
 	{
 		if (IsWindowResized())
-		{
-			Root.Resize();
-			for (auto child : Elements)
-				child->Resize();
-		}
+			DoResize();
 
 		// do input
 
 		// let everyone think
-
 		for (auto child : Elements)
 			child->Update();
 	}
+
+    GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)
+    {
+		element->Parent = &Root;
+		Elements.emplace_back(element);
+		OnElementAdd(element);
+    }
+
 }

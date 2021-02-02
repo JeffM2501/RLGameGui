@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 #include <memory>
 
@@ -38,14 +39,18 @@ namespace RLGameGUI
 	class GUIElement
 	{
 	public:
+		std::string Name;
+
 		void Update();
 		void Render();
 		void Resize();
 
 		using Ptr = std::shared_ptr<GUIElement>;
 
-		GUIElement::Ptr Parent;
+		GUIElement* Parent = nullptr;
 		std::vector<GUIElement::Ptr> Children;
+
+		GUIElement::Ptr AddChild(GUIElement::Ptr child);
 
 		Rectangle RelativeRect;
 
@@ -53,7 +58,10 @@ namespace RLGameGUI
 		virtual void OnUpdate() {}
 		virtual void OnRender() {}
 		virtual void OnResize() {}
+		virtual void OnAddChild(GUIElement::Ptr child) {}
 
 		virtual Rectangle& GetScreenRect();
+
+		Rectangle ScreenRect = { 0,0,0,0 };
 	};
 }
