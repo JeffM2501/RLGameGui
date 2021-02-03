@@ -64,5 +64,6 @@ void main()
 		Manager::Render();
 		EndDrawing();
 	}
+	UnloadTexture( logo );
 	CloseWindow();
 }
