@@ -38,12 +38,17 @@ void main()
 	InitWindow(1000, 600, "GUI Test");
 
 	Texture2D logo = LoadTexture("resources/raylib_logo.png");
+	Texture2D atlas = LoadTexture("resources/cubicmap_atlas.png");
 
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
 	GUIPanel::Ptr panel = GUIPanel::Create();
 	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.5f, true), RelativeValue(0.5f, true), AllignmentTypes::Maximum, AllignmentTypes::Maximum, Vector2{ 10,10 });
-	panel->Tint = GRAY;
+	panel->Background = atlas;
+	panel->SourceRect.width = atlas.width * 0.5f;
+	panel->SourceRect.height = atlas.height * 0.5f;
+	panel->Tile = true;
+	panel->Tint = WHITE;
 	rootScreen->AddElement(panel);
 
     GUIImage::Ptr panel2 = GUIImage::Create();

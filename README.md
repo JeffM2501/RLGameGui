@@ -3,8 +3,6 @@ Resolution independent gui for raylib
 
 # TODO
 Image Panel
-Label
-Relative rects and anchors
 N-patch images
 Button
 Text Input

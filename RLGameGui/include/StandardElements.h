@@ -38,6 +38,10 @@ namespace RLGameGUI
 	public:
 		Color Tint = WHITE;
 
+        Texture2D Background = { 0 };
+        Rectangle SourceRect = { 0,0,0,0 };
+        bool Tile = false;
+
 		typedef std::shared_ptr<GUIPanel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIPanel>(); }
 

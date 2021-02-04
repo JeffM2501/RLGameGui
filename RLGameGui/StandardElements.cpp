@@ -33,7 +33,21 @@ namespace RLGameGUI
 {
 	void GUIPanel::OnRender()
 	{
-		DrawRectangleRec(GetScreenRect(), Tint);
+        if (Background.id == 0)
+        {
+            DrawRectangleRec(GetScreenRect(), Tint);
+        }
+        else
+        {
+            if (SourceRect.width == 0)
+                SourceRect = Rectangle{ 0,0,(float)Background.width,(float)Background.height };
+
+            if (Tile)
+                DrawTextureTiled(Background, SourceRect, GetScreenRect(), Vector2{ 0,0 }, 0, 1, Tint);
+            else
+                DrawTexturePro(Background, SourceRect, GetScreenRect(), Vector2{ 0,0 }, 0, Tint);
+        }
+		
 	}
 
     void GUIImage::OnRender()
@@ -83,7 +97,6 @@ namespace RLGameGUI
                 RealSourceRect.height = RealDestRect.height;
         }
     }
-
 
     void GUILabel::SetText(const std::string& text)
     {
