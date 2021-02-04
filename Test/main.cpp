@@ -34,6 +34,7 @@ using namespace RLGameGUI;
 
 void main()
 {
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1000, 600, "GUI Test");
 
 	Texture2D logo = LoadTexture("resources/raylib_logo.png");
@@ -41,16 +42,28 @@ void main()
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
 	GUIPanel::Ptr panel = GUIPanel::Create();
-	panel->RelativeRect = Rectangle{ 10,10,500,500 };
+	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.5f, true), RelativeValue(0.5f, true), AllignmentTypes::Maximum, AllignmentTypes::Maximum, Vector2{ 10,10 });
 	panel->Tint = GRAY;
 	rootScreen->AddElement(panel);
 
     GUIImage::Ptr panel2 = GUIImage::Create();
-	panel2->RelativeRect = Rectangle{ 10,10,0,0 };
+	panel2->RelativeBounds = RelativeRect{ 10, 10, 0, 0 };
 	panel2->Tint = BLUE;
 	panel2->Background = logo;
 
 	panel->AddChild(panel2);
+
+	GUILabel::Ptr label = GUILabel::Create("I am IRON MAN");
+	label->RelativeBounds = RelativeRect{ 10, 10, 500, 40 };
+	rootScreen->AddElement(label);
+
+
+    GUIImage::Ptr panel3 = GUIImage::Create();
+	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AllignmentTypes::Minimum, AllignmentTypes::Maximum, Vector2{ 10,10 });
+	panel3->Tint = MAROON;
+	panel3->Background = logo;
+
+	rootScreen->AddElement(panel3);
 
 	Manager::PushScreen(rootScreen);
 

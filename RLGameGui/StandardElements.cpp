@@ -44,15 +44,21 @@ namespace RLGameGUI
 			DrawTexturePro(Background, RealSourceRect,RealDestRect, Vector2{ 0,0 }, 0, Tint);
     }
 
+    void GUIImage::OnUpdate()
+    {
+       
+    }
+
     void GUIImage::OnResize()
     {
         if (Background.id == 0)
             return;
 
-        if (RelativeRect.width == 0 && RelativeRect.height == 0)
+        if (RelativeBounds.Size.IsZero())
         {
-            RelativeRect.width = ScreenRect.width = (float)Background.width;
-            RelativeRect.height = ScreenRect.height = (float)Background.height;
+            RelativeBounds.Size = RelativePoint(Background.width, Background.height);
+            Resize();
+            return;
         }
 
         if (SourceRect.width == 0)
@@ -76,5 +82,18 @@ namespace RLGameGUI
             else if (RealSourceRect.height > RealDestRect.height)
                 RealSourceRect.height = RealDestRect.height;
         }
+    }
+
+    void GUILabel::OnRender()
+    {
+        Font fontToUse = TextFont;
+        if (TextFont.baseSize == 0)
+            fontToUse = GetFontDefault();
+
+        int defaultFontSize = 10;   // Default Font chars height in pixel
+        if (TextSize < defaultFontSize) TextSize = (float)defaultFontSize;
+        float spacing = TextSize / defaultFontSize;
+
+        DrawTextRec(fontToUse, Text.c_str(), ScreenRect, TextSize, spacing, false, Tint);
     }
 }

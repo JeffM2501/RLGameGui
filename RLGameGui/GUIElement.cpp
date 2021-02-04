@@ -35,18 +35,15 @@ namespace RLGameGUI
 		OnUpdate();
 		for (auto child : Children)
 			child->Update();
+
+        if (RelativeBounds.IsDirty())
+            Resize();
 	}
 
 	void GUIElement::Resize()
 	{
 		if (Parent != nullptr)
-		{
-			Rectangle& parrentRect = Parent->GetScreenRect();
-			ScreenRect.x = parrentRect.x + RelativeRect.x;
-			ScreenRect.y = parrentRect.y + RelativeRect.y;
-			ScreenRect.width = RelativeRect.width;
-			ScreenRect.height = RelativeRect.height;
-		}
+            ScreenRect = RelativeBounds.Resolve(Parent->GetScreenRect());
 
         OnResize();
         for (auto child : Children)
@@ -69,7 +66,79 @@ namespace RLGameGUI
 
 	Rectangle& GUIElement::GetScreenRect()
 	{
+        if (RelativeBounds.IsDirty())
+            Resize();
+
 		return ScreenRect;
 	}
 
+	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)
+	{
+		Clean();
+
+		float origin = AxisType == AxisTypes::Horizontal ? parrentScreenRect.x : parrentScreenRect.y;
+		float size = AxisType == AxisTypes::Horizontal ? parrentScreenRect.width : parrentScreenRect.height;
+
+		float pixelValue = SizeValue;
+		if (SizeType == RelativeSizeTypes::Percent)
+			pixelValue *= size;
+
+		pixelValue += origin;
+
+		return pixelValue;
+	}
+
+	float RelativeValue::ResolveSize(const Rectangle& parrentScreenRect)
+    {
+		Clean();
+
+        float size = AxisType == AxisTypes::Horizontal ? parrentScreenRect.width : parrentScreenRect.height;
+
+        float pixelValue = SizeValue;
+        if (SizeType == RelativeSizeTypes::Percent)
+            pixelValue *= size;
+
+        return pixelValue;
+    }
+
+	Vector2 RelativePoint::ResolvePos(const Rectangle& parent)
+	{
+		Clean();
+		return Vector2{ X.ResolvePos(parent), Y.ResolvePos(parent) };
+	}
+
+	Vector2 RelativePoint::ResolveSize(const Rectangle& parent)
+	{
+		Clean();
+		return Vector2{ X.ResolveSize(parent), Y.ResolveSize(parent) };
+	}
+
+	float GetAllginedValue(float value, AllignmentTypes allignment, float size, float offset)
+	{
+		if (allignment == AllignmentTypes::Maximum)
+		{
+			value -= size;
+			value -= offset;
+		}
+		else if (allignment == AllignmentTypes::Center)
+		{
+			value -= size * 0.5f;
+			value += offset;
+		}
+		else
+			value += offset;
+
+		return value;
+	}
+
+    Rectangle RelativeRect::Resolve(const Rectangle& parent)
+    {
+		Vector2 pixelSize = Size.ResolveSize(parent);
+		Vector2 pixelOrigin = Origin.ResolvePos(parent);
+
+		pixelOrigin.x = GetAllginedValue(pixelOrigin.x, HorizontalAllignment, pixelSize.x, Offset.x);
+		pixelOrigin.y = GetAllginedValue(pixelOrigin.y, VerticalAllignment, pixelSize.y, Offset.y);
+
+		return Rectangle{ pixelOrigin.x, pixelOrigin.y, pixelSize.x, pixelSize.y };
+    }
 }

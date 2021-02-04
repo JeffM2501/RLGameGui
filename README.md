@@ -4,12 +4,13 @@ Resolution independent gui for raylib
 # TODO
 Image Panel
 Label
+Relative rects and anchors
+N-patch images
 Button
 Text Input
 Hover, Select, Hide, Toggle states
 Screen Swapping
 Popups
-Relative rects and anchors
 Checkbox
 List
 ComboBox

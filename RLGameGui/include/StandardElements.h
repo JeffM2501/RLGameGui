@@ -58,11 +58,31 @@ namespace RLGameGUI
         inline static Ptr Create() { return std::make_shared<GUIImage>(); }
 
     protected:
+        void OnUpdate() override;
         void OnRender() override;
         void OnResize() override;
 
         Rectangle RealSourceRect = { 0 };
         Rectangle RealDestRect = { 0 };
+    };
 
+    class GUILabel : public GUIElement
+    {
+    public:
+        Color Tint = BLACK;
+        Font TextFont = GetFontDefault();
+        float TextSize = 20;
+
+        std::string Text;
+
+        GUILabel() {}
+        GUILabel(const std::string& text) : Text(text) {}
+
+        typedef std::shared_ptr<GUILabel> Ptr;
+        inline static Ptr Create() { return std::make_shared<GUILabel>(); }
+        inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
+
+    protected:
+        void OnRender() override;
     };
 }
