@@ -31,26 +31,57 @@
 
 namespace RLGameGUI
 {
+    static Vector2 V2Zero = { 0,0 };
+
 	void GUIPanel::OnRender()
 	{
+        Rectangle rect = GetScreenRect();
+
         if (Background.id == 0)
         {
             if (Tint.a != 0)
-                DrawRectangleRec(GetScreenRect(), Tint);
+            {
+                DrawRectangleRec(rect, Tint);
+            }
             if (Outline.a != 0 && OutlineThickness > 0)
-                DrawRectangleLinesEx(GetScreenRect(), OutlineThickness, Outline);
+            {
+                rect.height += 1;
+                DrawRectangleLinesEx(rect, OutlineThickness, Outline);
+            }     
         }
         else
         {
             if (SourceRect.width == 0)
                 SourceRect = Rectangle{ 0,0,(float)Background.width,(float)Background.height };
 
-            if (Tile)
-                DrawTextureTiled(Background, SourceRect, GetScreenRect(), Vector2{ 0,0 }, 0, 1, Tint);
-            else
-                DrawTexturePro(Background, SourceRect, GetScreenRect(), Vector2{ 0,0 }, 0, Tint);
+            if (Fillmode == PanelFillModes::Tile)
+            {
+                DrawTextureTiled(Background, SourceRect, rect, V2Zero, 0, 1, Tint);
+            }
+            else if (Fillmode == PanelFillModes::Fill)
+            {
+                DrawTexturePro(Background, SourceRect, rect, V2Zero, 0, Tint);
+            }
+            else if (Fillmode == PanelFillModes::NPatch)
+            {
+                if (NPatchData.source.width == 0)
+                {
+                    NPatchData.source = SourceRect;
+
+                    NPatchData.left = NPatchData.right = (int)NPatchGutters.x;
+                    NPatchData.top = NPatchData.bottom = (int)NPatchGutters.y;
+         
+                    if (NPatchGutters.x == 0)
+                        NPatchData.type = NPT_3PATCH_VERTICAL;
+                    else if (NPatchGutters.y == 0)
+                        NPatchData.type = NPT_3PATCH_HORIZONTAL;
+                    else
+                        NPatchData.type = NPT_9PATCH;
+                }
+
+                DrawTextureNPatch(Background, NPatchData, rect, V2Zero, 0, Tint);
+            }
         }
-		
 	}
 
     void GUIImage::OnRender()

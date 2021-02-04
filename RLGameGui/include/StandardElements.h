@@ -39,6 +39,13 @@ namespace RLGameGUI
         GUIFrame() { Renders = false; }
     };
 
+    enum class PanelFillModes
+    {
+        Fill,
+        Tile,
+        NPatch,
+    };
+
 	class GUIPanel : public GUIElement
 	{
 	public:
@@ -48,13 +55,18 @@ namespace RLGameGUI
 
         Texture2D Background = { 0 };
         Rectangle SourceRect = { 0,0,0,0 };
-        bool Tile = false;
+
+        PanelFillModes Fillmode = PanelFillModes::Fill;
+
+        Vector2 NPatchGutters = Vector2{ 0,0 };
 
 		typedef std::shared_ptr<GUIPanel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIPanel>(); }
 
 	protected:
 		void OnRender() override;
+
+        NPatchInfo NPatchData = { 0 };
 	};
 
     class GUIImage : public GUIElement

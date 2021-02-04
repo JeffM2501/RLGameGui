@@ -39,27 +39,30 @@ void main()
 
 	Texture2D logo = LoadTexture("resources/raylib_logo.png");
 	Texture2D atlas = LoadTexture("resources/cubicmap_atlas.png");
+	Texture2D nPatch = LoadTexture("resources/ninepatch_button.png");
 
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
 	GUIPanel::Ptr panel = GUIPanel::Create();
 	panel->Name = "panel1";
 	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-// 	panel->Background = atlas;
-// 	panel->SourceRect.width = atlas.width * 0.5f;
-// 	panel->SourceRect.height = atlas.height * 0.5f;
-// 	panel->SourceRect.y = atlas.height * 0.5f;
-	panel->Padding = RelativePoint(10, 10);
-	panel->Tile = true;
-	panel->Tint = BLUE;
-	panel->OutlineThickness = 2;
-	panel->Outline = DARKBLUE;
+ 	panel->Background = nPatch;
+ 	panel->SourceRect.width = nPatch.width;
+ 	panel->SourceRect.height = nPatch.height * 0.25f;
+ 	panel->SourceRect.y = nPatch.height * 0.75f;
+	panel->Padding = RelativePoint(8, 8);
+	panel->Fillmode = PanelFillModes::NPatch;
+	panel->NPatchGutters = Vector2{ 16, 16 };
+
+	panel->Tint = WHITE;
+// 	panel->OutlineThickness = 2;
+// 	panel->Outline = DARKBLUE;
 	rootScreen->AddElement(panel);
 
 	GUIPanel::Ptr panel2 = GUIPanel::Create();
 	panel2->Name = "Panel2";
 	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
-	panel2->Tint = GRAY;
+	panel2->Tint = Color{ MAROON.r,MAROON.g,MAROON.b, 128 };
 	panel2->Outline = BLACK;
 	panel2->OutlineThickness = 4;
 
