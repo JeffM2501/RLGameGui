@@ -84,8 +84,8 @@ namespace RLGameGUI
         inline static Ptr Create() { return std::make_shared<GUILabel>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
 
-        AllignmentTypes HorizontalAllignment = AllignmentTypes::Minimum;
-        AllignmentTypes VerticalAllignment = AllignmentTypes::Minimum;
+        AlignmentTypes HorizontalAlignment = AlignmentTypes::Minimum;
+        AlignmentTypes VerticalAlignment = AlignmentTypes::Minimum;
 
         const std::string& GetText() const { return Text; }
         void SetText(const std::string& text);

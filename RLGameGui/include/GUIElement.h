@@ -48,7 +48,7 @@ namespace RLGameGUI
 		Vertical,
 	};
 
-	enum class AllignmentTypes
+	enum class AlignmentTypes
 	{
 		Minimum,
 		Maximum,
@@ -117,8 +117,8 @@ namespace RLGameGUI
 		RelativePoint Origin;
 		RelativePoint Size;
 
-		AllignmentTypes HorizontalAllignment = AllignmentTypes::Minimum;
-		AllignmentTypes VerticalAllignment = AllignmentTypes::Minimum;
+		AlignmentTypes HorizontalAlignment = AlignmentTypes::Minimum;
+		AlignmentTypes VerticalAlignment = AlignmentTypes::Minimum;
 		Vector2 Offset = { 0,0 };
 
 		RelativeRect() : Origin(0.0f, 0.0f), Size(1.0f, 1.0f) {}
@@ -126,8 +126,8 @@ namespace RLGameGUI
 		RelativeRect(float x, float y, float width, float height) : Origin(x,y), Size(width,height) {}
 		RelativeRect(int x, int y, int width, int height) : Origin(x, y), Size(width, height) {}
 		RelativeRect(RelativeValue x, RelativeValue y, RelativeValue width, RelativeValue height) : Origin(x, y), Size(width, height) {}
-		RelativeRect(RelativeValue x, RelativeValue y, RelativeValue width, RelativeValue height, AllignmentTypes hAllign, AllignmentTypes vAllign) : Origin(x, y), Size(width, height), HorizontalAllignment(hAllign), VerticalAllignment(vAllign) {}
-        RelativeRect(RelativeValue x, RelativeValue y, RelativeValue width, RelativeValue height, AllignmentTypes hAllign, AllignmentTypes vAllign, Vector2 offset) : Origin(x, y), Size(width, height), HorizontalAllignment(hAllign), VerticalAllignment(vAllign), Offset(offset) {}
+		RelativeRect(RelativeValue x, RelativeValue y, RelativeValue width, RelativeValue height, AlignmentTypes hAllign, AlignmentTypes vAllign) : Origin(x, y), Size(width, height), HorizontalAlignment(hAllign), VerticalAlignment(vAllign) {}
+        RelativeRect(RelativeValue x, RelativeValue y, RelativeValue width, RelativeValue height, AlignmentTypes hAllign, AlignmentTypes vAllign, Vector2 offset) : Origin(x, y), Size(width, height), HorizontalAlignment(hAllign), VerticalAlignment(vAllign), Offset(offset) {}
 
         inline bool IsDirty() const { return Origin.IsDirty() || Size.IsDirty(); }
         inline void Clean() { Origin.Clean(); Size.Clean(); }

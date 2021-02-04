@@ -113,14 +113,14 @@ namespace RLGameGUI
 		return Vector2{ X.ResolveSize(parent), Y.ResolveSize(parent) };
 	}
 
-	float GetAllginedValue(float value, AllignmentTypes allignment, float size, float offset)
+	float GetAllginedValue(float value, AlignmentTypes Alignment, float size, float offset)
 	{
-		if (allignment == AllignmentTypes::Maximum)
+		if (Alignment == AlignmentTypes::Maximum)
 		{
 			value -= size;
 			value -= offset;
 		}
-		else if (allignment == AllignmentTypes::Center)
+		else if (Alignment == AlignmentTypes::Center)
 		{
 			value -= size * 0.5f;
 			value += offset;
@@ -136,8 +136,8 @@ namespace RLGameGUI
 		Vector2 pixelSize = Size.ResolveSize(parent);
 		Vector2 pixelOrigin = Origin.ResolvePos(parent);
 
-		pixelOrigin.x = GetAllginedValue(pixelOrigin.x, HorizontalAllignment, pixelSize.x, Offset.x);
-		pixelOrigin.y = GetAllginedValue(pixelOrigin.y, VerticalAllignment, pixelSize.y, Offset.y);
+		pixelOrigin.x = GetAllginedValue(pixelOrigin.x, HorizontalAlignment, pixelSize.x, Offset.x);
+		pixelOrigin.y = GetAllginedValue(pixelOrigin.y, VerticalAlignment, pixelSize.y, Offset.y);
 
 		return Rectangle{ pixelOrigin.x, pixelOrigin.y, pixelSize.x, pixelSize.y };
     }

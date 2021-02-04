@@ -122,13 +122,13 @@ namespace RLGameGUI
         Vector2 size = MeasureTextEx(fontToUse, Text.c_str(), TextSize, Spacing);
 
         TextRect.width = size.x + Spacing * 2;
-        switch (HorizontalAllignment)
+        switch (HorizontalAlignment)
         {
-        case RLGameGUI::AllignmentTypes::Maximum:
+        case RLGameGUI::AlignmentTypes::Maximum:
             TextRect.x = (ScreenRect.x + ScreenRect.width) - size.x;
             break;
 
-        case RLGameGUI::AllignmentTypes::Center:
+        case RLGameGUI::AlignmentTypes::Center:
             TextRect.x = (ScreenRect.x + ScreenRect.width * 0.5f) - size.x * 0.5f;
             break;
 
@@ -138,13 +138,13 @@ namespace RLGameGUI
         }
 
         TextRect.height = size.y;
-        switch (VerticalAllignment)
+        switch (VerticalAlignment)
         {
-        case RLGameGUI::AllignmentTypes::Maximum:
+        case RLGameGUI::AlignmentTypes::Maximum:
             TextRect.y = (ScreenRect.y + ScreenRect.height) - size.y;
             break;
 
-        case RLGameGUI::AllignmentTypes::Center:
+        case RLGameGUI::AlignmentTypes::Center:
             TextRect.y = (ScreenRect.y + ScreenRect.height * 0.5f) - size.y * 0.5f;
             break;
 

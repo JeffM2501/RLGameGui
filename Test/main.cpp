@@ -43,7 +43,7 @@ void main()
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
 	GUIPanel::Ptr panel = GUIPanel::Create();
-	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.5f, true), RelativeValue(0.5f, true), AllignmentTypes::Maximum, AllignmentTypes::Maximum, Vector2{ 10,10 });
+	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.5f, true), RelativeValue(0.5f, true), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
 	panel->Background = atlas;
 	panel->SourceRect.width = atlas.width * 0.5f;
 	panel->SourceRect.height = atlas.height * 0.5f;
@@ -64,16 +64,16 @@ void main()
 
     GUILabel::Ptr label2 = GUILabel::Create("Centered");
 	label2->RelativeBounds = RelativeRect{ 10, 20, 500, 40 };
-	label2->HorizontalAllignment = AllignmentTypes::Center;
+	label2->HorizontalAlignment = AlignmentTypes::Center;
     rootScreen->AddElement(label2);
 
     GUILabel::Ptr label3 = GUILabel::Create("Right");
 	label3->RelativeBounds = RelativeRect{ 10, 40, 500, 40 };
-	label3->HorizontalAllignment = AllignmentTypes::Maximum;
+	label3->HorizontalAlignment = AlignmentTypes::Maximum;
     rootScreen->AddElement(label3);
 
     GUIImage::Ptr panel3 = GUIImage::Create();
-	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AllignmentTypes::Minimum, AllignmentTypes::Maximum, Vector2{ 10,10 });
+	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
 	panel3->Tint = MAROON;
 	panel3->Background = logo;
 
