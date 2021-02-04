@@ -34,10 +34,13 @@ namespace RLGameGUI
 {
     class RootElement : public GUIElement
     {
+    public:
+        RootElement() {Name = "RootElement"; }
+
     protected:
         Rectangle& GetScreenRect() override;
-        void OnResize() override;
+        Rectangle& GetContentRect() override { return GetScreenRect(); }
 
-        Rectangle ScreenRect = { 0,0,0,0 };
+        void OnResize() override;
     };
 }

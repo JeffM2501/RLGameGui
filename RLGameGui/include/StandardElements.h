@@ -33,10 +33,18 @@
 
 namespace RLGameGUI
 {
+    class GUIFrame : public GUIElement
+    {
+    public:
+        GUIFrame() { Renders = false; }
+    };
+
 	class GUIPanel : public GUIElement
 	{
 	public:
 		Color Tint = WHITE;
+        Color Outline = BLANK;
+        int OutlineThickness = 0;
 
         Texture2D Background = { 0 };
         Rectangle SourceRect = { 0,0,0,0 };
@@ -64,6 +72,7 @@ namespace RLGameGUI
     protected:
         void OnUpdate() override;
         void OnRender() override;
+        void OnPreResize() override;
         void OnResize() override;
 
         Rectangle RealSourceRect = { 0 };

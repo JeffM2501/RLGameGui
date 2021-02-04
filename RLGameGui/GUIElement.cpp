@@ -42,8 +42,20 @@ namespace RLGameGUI
 
 	void GUIElement::Resize()
 	{
+		OnPreResize();
+
+		Vector2 padding = { 0,0 };
 		if (Parent != nullptr)
-            ScreenRect = RelativeBounds.Resolve(Parent->GetScreenRect());
+		{
+			ScreenRect = RelativeBounds.Resolve(Parent->GetContentRect());
+			padding = Padding.ResolveSize(Parent->GetContentRect());
+		}
+
+		ContentRect = ScreenRect;
+		ContentRect.x += padding.x;
+		ContentRect.y += padding.y;
+		ContentRect.width -= padding.x * 2;
+		ContentRect.height -= padding.y * 2;
 
         OnResize();
         for (auto child : Children)
@@ -59,7 +71,12 @@ namespace RLGameGUI
 
     void GUIElement::Render()
 	{
-		OnRender();
+		if (Hidden)
+			return;
+
+		if (Renders)
+			OnRender();
+
 		for (auto child : Children)
 			child->Render();
 	}
@@ -70,6 +87,14 @@ namespace RLGameGUI
             Resize();
 
 		return ScreenRect;
+	}
+
+	Rectangle& GUIElement::GetContentRect()
+	{
+        if (RelativeBounds.IsDirty())
+            Resize();
+
+        return ContentRect;
 	}
 
 	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)

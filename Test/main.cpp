@@ -43,18 +43,25 @@ void main()
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
 	GUIPanel::Ptr panel = GUIPanel::Create();
-	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.5f, true), RelativeValue(0.5f, true), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-	panel->Background = atlas;
-	panel->SourceRect.width = atlas.width * 0.5f;
-	panel->SourceRect.height = atlas.height * 0.5f;
+	panel->Name = "panel1";
+	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+// 	panel->Background = atlas;
+// 	panel->SourceRect.width = atlas.width * 0.5f;
+// 	panel->SourceRect.height = atlas.height * 0.5f;
+// 	panel->SourceRect.y = atlas.height * 0.5f;
+	panel->Padding = RelativePoint(10, 10);
 	panel->Tile = true;
-	panel->Tint = WHITE;
+	panel->Tint = BLUE;
+	panel->OutlineThickness = 2;
+	panel->Outline = DARKBLUE;
 	rootScreen->AddElement(panel);
 
-    GUIImage::Ptr panel2 = GUIImage::Create();
-	panel2->RelativeBounds = RelativeRect{ 10, 10, 0, 0 };
-	panel2->Tint = BLUE;
-	panel2->Background = logo;
+	GUIPanel::Ptr panel2 = GUIPanel::Create();
+	panel2->Name = "Panel2";
+	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
+	panel2->Tint = GRAY;
+	panel2->Outline = BLACK;
+	panel2->OutlineThickness = 4;
 
 	panel->AddChild(panel2);
 
@@ -88,7 +95,7 @@ void main()
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 
-		DrawLine(500, 0, 500, 600, RED);
+		DrawLine(GetScreenWidth()/2, 0, GetScreenWidth()/2, GetScreenHeight(), RED);
 
 		Manager::Render();
 		EndDrawing();

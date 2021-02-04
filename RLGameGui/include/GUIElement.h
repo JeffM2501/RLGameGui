@@ -154,14 +154,25 @@ namespace RLGameGUI
 
 		RelativeRect RelativeBounds;
 
+		bool Hidden = false;
+		bool Disabled = false;
+
+		RelativePoint Padding;
+
 	protected:
+
+		bool Renders = true;
+
 		virtual void OnUpdate() {}
 		virtual void OnRender() {}
+		virtual void OnPreResize() {}
 		virtual void OnResize() {}
 		virtual void OnAddChild(GUIElement::Ptr child) {}
 
 		virtual Rectangle& GetScreenRect();
+		virtual Rectangle& GetContentRect();
 
 		Rectangle ScreenRect = { 0,0,0,0 };
+		Rectangle ContentRect = { 0,0,0,0 };
 	};
 }

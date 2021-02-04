@@ -35,7 +35,10 @@ namespace RLGameGUI
 	{
         if (Background.id == 0)
         {
-            DrawRectangleRec(GetScreenRect(), Tint);
+            if (Tint.a != 0)
+                DrawRectangleRec(GetScreenRect(), Tint);
+            if (Outline.a != 0 && OutlineThickness > 0)
+                DrawRectangleLinesEx(GetScreenRect(), OutlineThickness, Outline);
         }
         else
         {
@@ -63,16 +66,11 @@ namespace RLGameGUI
        
     }
 
-    void GUIImage::OnResize()
+    void GUIImage::OnPreResize()
     {
-        if (Background.id == 0)
-            return;
-
         if (RelativeBounds.Size.IsZero())
         {
             RelativeBounds.Size = RelativePoint(Background.width, Background.height);
-            Resize();
-            return;
         }
 
         if (SourceRect.width == 0)
@@ -80,6 +78,12 @@ namespace RLGameGUI
             SourceRect.width = (float)Background.width;
             SourceRect.height = (float)Background.height;
         }
+    }
+
+    void GUIImage::OnResize()
+    {
+        if (Background.id == 0)
+            return;
 
         RealSourceRect = SourceRect;
         RealDestRect = GetScreenRect();
