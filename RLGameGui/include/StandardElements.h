@@ -73,8 +73,6 @@ namespace RLGameGUI
         Font TextFont = GetFontDefault();
         float TextSize = 20;
 
-        std::string Text;
-
         GUILabel() {}
         GUILabel(const std::string& text) : Text(text) {}
 
@@ -82,7 +80,19 @@ namespace RLGameGUI
         inline static Ptr Create() { return std::make_shared<GUILabel>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
 
+        AllignmentTypes HorizontalAllignment = AllignmentTypes::Minimum;
+        AllignmentTypes VerticalAllignment = AllignmentTypes::Minimum;
+
+        const std::string& GetText() const { return Text; }
+        void SetText(const std::string& text);
+
     protected:
         void OnRender() override;
+        void OnResize() override;
+
+        std::string Text;
+
+        Rectangle TextRect = { 0,0,0,0 };
+        float Spacing = 1;
     };
 }

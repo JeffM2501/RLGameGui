@@ -84,16 +84,69 @@ namespace RLGameGUI
         }
     }
 
+
+    void GUILabel::SetText(const std::string& text)
+    {
+        if (text == Text)
+            return;
+        Text = text;
+
+        OnResize();
+    }
+
+    void GUILabel::OnResize()
+    {
+        int defaultFontSize = 10;   // Default Font chars height in pixel
+        if (TextSize < defaultFontSize)
+            TextSize = (float)defaultFontSize;
+
+        Spacing = TextSize / defaultFontSize;
+
+        Font fontToUse = TextFont;
+        if (TextFont.texture.id == 0)
+            fontToUse = GetFontDefault();
+
+        Vector2 size = MeasureTextEx(fontToUse, Text.c_str(), TextSize, Spacing);
+
+        TextRect.width = size.x + Spacing * 2;
+        switch (HorizontalAllignment)
+        {
+        case RLGameGUI::AllignmentTypes::Maximum:
+            TextRect.x = (ScreenRect.x + ScreenRect.width) - size.x;
+            break;
+
+        case RLGameGUI::AllignmentTypes::Center:
+            TextRect.x = (ScreenRect.x + ScreenRect.width * 0.5f) - size.x * 0.5f;
+            break;
+
+        default:
+            TextRect.x = ScreenRect.x;
+            break;
+        }
+
+        TextRect.height = size.y;
+        switch (VerticalAllignment)
+        {
+        case RLGameGUI::AllignmentTypes::Maximum:
+            TextRect.y = (ScreenRect.y + ScreenRect.height) - size.y;
+            break;
+
+        case RLGameGUI::AllignmentTypes::Center:
+            TextRect.y = (ScreenRect.y + ScreenRect.height * 0.5f) - size.y * 0.5f;
+            break;
+
+        default:
+            TextRect.y = ScreenRect.y;
+            break;
+        }
+    }
+
     void GUILabel::OnRender()
     {
         Font fontToUse = TextFont;
-        if (TextFont.baseSize == 0)
+        if (TextFont.texture.id == 0)
             fontToUse = GetFontDefault();
 
-        int defaultFontSize = 10;   // Default Font chars height in pixel
-        if (TextSize < defaultFontSize) TextSize = (float)defaultFontSize;
-        float spacing = TextSize / defaultFontSize;
-
-        DrawTextRec(fontToUse, Text.c_str(), ScreenRect, TextSize, spacing, false, Tint);
+        DrawTextRec(fontToUse, Text.c_str(), TextRect, TextSize, Spacing, false, Tint);
     }
 }

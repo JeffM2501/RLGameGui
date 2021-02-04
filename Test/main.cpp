@@ -57,6 +57,15 @@ void main()
 	label->RelativeBounds = RelativeRect{ 10, 10, 500, 40 };
 	rootScreen->AddElement(label);
 
+    GUILabel::Ptr label2 = GUILabel::Create("Centered");
+	label2->RelativeBounds = RelativeRect{ 10, 20, 500, 40 };
+	label2->HorizontalAllignment = AllignmentTypes::Center;
+    rootScreen->AddElement(label2);
+
+    GUILabel::Ptr label3 = GUILabel::Create("Right");
+	label3->RelativeBounds = RelativeRect{ 10, 40, 500, 40 };
+	label3->HorizontalAllignment = AllignmentTypes::Maximum;
+    rootScreen->AddElement(label3);
 
     GUIImage::Ptr panel3 = GUIImage::Create();
 	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AllignmentTypes::Minimum, AllignmentTypes::Maximum, Vector2{ 10,10 });
@@ -73,6 +82,8 @@ void main()
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
+
+		DrawLine(500, 0, 500, 600, RED);
 
 		Manager::Render();
 		EndDrawing();
