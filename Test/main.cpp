@@ -40,6 +40,7 @@ void main()
 	Texture2D logo = LoadTexture("resources/raylib_logo.png");
 	Texture2D atlas = LoadTexture("resources/cubicmap_atlas.png");
 	Texture2D nPatch = LoadTexture("resources/ninepatch_button.png");
+    Texture2D imageButton = LoadTexture("resources/button.png");
 
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
@@ -88,11 +89,12 @@ void main()
  	panel3->Background = logo;
  	rootScreen->AddElement(panel3);
 
-    GUIButton::Ptr button = GUIButton::Create("Button");
+    GUIButton::Ptr button = GUIButton::Create(imageButton);
 	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
-	button->Tint = GRAY;
-	button->HoverTint = BLUE;
-	button->PressTint = MAROON;
+	button->Tint = WHITE;
+    button->HoverTint = ORANGE;
+    button->SetButtonFrames(1, 3, 0, 1, 0, 1, 0, 2, 0, 0);
+
     rootScreen->AddElement(button);
 
 	Manager::PushScreen(rootScreen);

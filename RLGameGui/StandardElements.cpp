@@ -31,10 +31,7 @@
 
 namespace RLGameGUI
 {
-    static Vector2 V2Zero = { 0, 0 };
-    static Vector2 V2One = { 1.0f, 1.0f };
-
-    void GUIPanel::Draw(Color fill, Color outline, Vector2 offset, Vector2 scale)
+    void GUIPanel::Draw(Color fill, Color outline, const Vector2& offset, const Vector2& scale)
     {
         Rectangle rect = GetScreenRect();
         rect.x += offset.x;
@@ -53,7 +50,7 @@ namespace RLGameGUI
         }
     }
 
-    void GUIPanel::Draw(Texture2D fill, Color tint, Vector2 offset, Vector2 scale)
+    void GUIPanel::Draw(const Texture2D &fill, Color tint, const Rectangle& source, const Vector2& offset, const Vector2& scale)
     {
         Rectangle rect = GetScreenRect();
 
@@ -67,18 +64,16 @@ namespace RLGameGUI
 
         if (Fillmode == PanelFillModes::Tile)
         {
-            DrawTextureTiled(fill, SourceRect, rect, V2Zero, 0, 1, tint);
+            DrawTextureTiled(fill, source, rect, V2Zero, 0, 1, tint);
         }
         else if (Fillmode == PanelFillModes::Fill)
         {
-            DrawTexturePro(fill, SourceRect, rect, V2Zero, 0, tint);
+            DrawTexturePro(fill, source, rect, V2Zero, 0, tint);
         }
         else if (Fillmode == PanelFillModes::NPatch)
         {
             if (NPatchData.source.width == 0)
             {
-                NPatchData.source = SourceRect;
-
                 NPatchData.left = NPatchData.right = (int)NPatchGutters.x;
                 NPatchData.top = NPatchData.bottom = (int)NPatchGutters.y;
 
@@ -88,7 +83,8 @@ namespace RLGameGUI
                     NPatchData.type = NPT_3PATCH_HORIZONTAL;
                 else
                     NPatchData.type = NPT_9PATCH;
-            }
+            } 
+            NPatchData.source = source;
 
             DrawTextureNPatch(fill, NPatchData, rect, V2Zero, 0, tint);
         }
@@ -99,7 +95,7 @@ namespace RLGameGUI
         if (Background.id == 0)
             Draw(Tint, Outline, V2Zero, V2Zero);
         else
-            Draw(Background, Tint, V2Zero, V2Zero);
+            Draw(Background, Tint, SourceRect, V2Zero, V2Zero);
 	}
 
     void GUIImage::OnRender()
@@ -216,6 +212,45 @@ namespace RLGameGUI
         DrawTextRec(fontToUse, Text.c_str(), TextRect, TextSize, Spacing, false, Tint);
     }
 
+    void GUIButton::SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX, int hoverY, int pressX, int pressY, int disableX, int disableY )
+    {
+        float xGrid = (float)Background.width / (float)framesX;
+        float yGrid = (float)Background.height / (float)framesY;
+
+        if (backgroundX >= 0 && backgroundY >= 0)
+        {
+            SourceRect.x = backgroundX * xGrid;
+            SourceRect.y = backgroundY * yGrid;
+            SourceRect.width = xGrid;
+            SourceRect.height = yGrid-1;
+        }
+
+        if (hoverX >= 0 && hoverY >= 0)
+        {
+            HoverSourceRect.x = hoverX * xGrid;
+            HoverSourceRect.y = hoverY * yGrid;
+            HoverSourceRect.width = xGrid;
+            HoverSourceRect.height = yGrid;
+        }
+
+        if (pressX >= 0 && pressY >= 0)
+        {
+            PressSourceRect.x = pressX * xGrid;
+            PressSourceRect.y = pressY * yGrid;
+            PressSourceRect.width = xGrid;
+            PressSourceRect.height = yGrid;
+        }
+
+        if (disableX >= 0 && disableY >= 0)
+        {
+            DisableSourceRect.x = disableX * xGrid;
+            DisableSourceRect.y = disableY * yGrid;
+            DisableSourceRect.width = xGrid;
+            DisableSourceRect.height = yGrid;
+        }
+    }
+
+
     void GUIButton::OnResize()
     {
         TextRect = ResizeTextBox(TextSize, Text, TextFont, Spacing, ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);
@@ -226,6 +261,7 @@ namespace RLGameGUI
         Color color = Tint;
         Color labelColor = TextColor;
         Texture2D tx = Background;
+        Rectangle sourceRect = SourceRect;
 
         Vector2 offset = V2Zero;
         Vector2 scale = V2Zero;
@@ -234,38 +270,57 @@ namespace RLGameGUI
         {
             color = DisableTint;
             labelColor = DisableTextColor;
+
+            if (DisableTexture.id != 0)
+                tx = DisableTexture;
+
+            if (DisableSourceRect.width > 0)
+                sourceRect = DisableSourceRect;
         }
         else
         {
             if (Clicked)
             {
-                offset.x = 2;
-                offset.y = 2;
+                offset = PressOffset;
+                scale = PressScale;
+
                 if (PressTint.a > 0)
                     color = PressTint;
 
                 if (PressTextColor.a > 0)
                     labelColor = PressTextColor;
+
+                if (PressTexture.id != 0)
+                    tx = PressTexture;
+
+                if (PressSourceRect.width > 0)
+                    sourceRect = PressSourceRect;
             }
             else if (Hovered)
             {
-                offset.x = -1;
-                offset.y = -1;
-                scale.x = 2;
-                scale.y = 2;
+                offset = HoverOffset;
+                scale = HoverScale;
 
                 if (HoverTint.a > 0)
                     color = HoverTint;
 
                 if (HoverTextColor.a > 0)
                     labelColor = HoverTextColor;
+
+                if (HoverTexture.id != 0)
+                    tx = HoverTexture;
+
+                if (HoverSourceRect.width > 0)
+                    sourceRect = HoverSourceRect;
             }
         }
 
-        if (tx.id == 0)
+        if (Background.id == 0)
             Draw(color, Outline, offset, scale);
         else
-            Draw(tx, color, offset, scale);
+        {
+            Draw(tx, color, sourceRect, offset, scale);
+        }
 
         if (!Text.empty())
         {

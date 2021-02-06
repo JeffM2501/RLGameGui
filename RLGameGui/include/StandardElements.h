@@ -33,6 +33,9 @@
 
 namespace RLGameGUI
 {
+    static Vector2 V2Zero = { 0, 0 };
+    static Vector2 V2One = { 1.0f, 1.0f };
+
     class GUIFrame : public GUIElement
     {
     public:
@@ -72,8 +75,8 @@ namespace RLGameGUI
 	protected:
       	void OnRender() override;
 
-        void Draw(Color fill, Color outline, Vector2 offset, Vector2 scale);
-        void Draw(Texture2D fill, Color tint, Vector2 offset, Vector2 scale);
+        void Draw(Color fill, Color outline, const Vector2& offset, const Vector2& scale);
+        void Draw(const Texture2D& fill, Color tint, const Rectangle& sourceRect, const Vector2 &offset, const Vector2& scale);
 
         NPatchInfo NPatchData = { 0 };
 	};
@@ -156,15 +159,24 @@ namespace RLGameGUI
         Texture2D DisableTexture = { 0 };
         Color DisableTextColor = GRAY;
 
+        Vector2 HoverOffset = V2Zero;
+        Vector2 HoverScale = V2Zero;
+        Vector2 PressOffset = V2Zero;
+        Vector2 PressScale = V2Zero;
+
         GUIButton() {}
         GUIButton(const std::string& text) : Text(text) {}
+        GUIButton(const Texture2D& texture) { Background = texture; }
 
         typedef std::shared_ptr<GUIButton> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIButton>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUIButton>(text); }
+        inline static Ptr Create(const Texture2D& texture) { return std::make_shared<GUIButton>(texture); }
 
         inline virtual void SetText(const std::string& text) { Text = text; RelativeBounds.SetDirty(); }
         inline const std::string& GetText() { return Text; }
+
+        virtual void SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX = -1, int hoverY = -1, int pressX = -1, int pressY = -1, int disableX = -1, int disableY = -1);
 
     protected:
         void OnResize() override;
