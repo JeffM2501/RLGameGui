@@ -62,10 +62,11 @@ namespace RLGameGUI
 			DoResize();
 
 		// do input
+		Vector2 mouse = GetMousePosition();
 
 		// let everyone think
 		for (auto child : Elements)
-			child->Update();
+			child->Update(mouse);
 	}
 
 	void GUIScreen::Render()

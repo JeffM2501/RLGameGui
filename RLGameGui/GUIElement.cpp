@@ -30,14 +30,55 @@
 
 namespace RLGameGUI
 {
-	void GUIElement::Update()
+	void GUIElement::Update(Vector2 mousePostion)
 	{
-		OnUpdate();
-		for (auto child : Children)
-			child->Update();
-
         if (RelativeBounds.IsDirty())
             Resize();
+
+		if (Disabled)
+			mousePostion.x = -1;
+
+		if (mousePostion.x < 0 || !CheckCollisionPointRec(mousePostion, GetScreenRect()))
+		{
+			if (Hovered)
+				OnHoverEnd();
+			Hovered = false;
+
+			if (Clicked)
+				OnClickCancel();
+			Clicked = false;
+		}
+		else
+		{
+			if (!Hovered)
+			{
+				Hovered = true;
+				OnHoverStart();
+			}
+
+			if (IsMouseButtonDown(0))
+			{
+				if (!Clicked)
+				{
+					Clicked = true;
+					OnClickStart();
+				}
+			}
+			else if (Clicked)
+			{
+				Clicked = false;
+				OnClickEnd();
+				if (ElementClicked != nullptr)
+					ElementClicked(this);
+			}
+		}
+
+		OnUpdate();
+        if (RelativeBounds.IsDirty())
+            Resize();
+
+		for (auto child : Children)
+			child->Update(mousePostion);
 	}
 
 	void GUIElement::Resize()

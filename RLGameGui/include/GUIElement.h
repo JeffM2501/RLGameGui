@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include "raylib.h"
 
@@ -141,11 +142,12 @@ namespace RLGameGUI
 	public:
 		std::string Name;
 
-		void Update();
+		void Update(Vector2 mousePosition);
 		void Render();
 		void Resize();
 
 		typedef std::shared_ptr<GUIElement> Ptr;
+        typedef std::function<void(GUIElement*)> Function;
 
 		GUIElement* Parent = nullptr;
 		std::vector<GUIElement::Ptr> Children;
@@ -159,15 +161,27 @@ namespace RLGameGUI
 
 		RelativePoint Padding;
 
+		Function ElementClicked = nullptr;
+
 	protected:
 
 		bool Renders = true;
+		
+		bool Hovered = false;
+		bool Clicked = false;
 
 		virtual void OnUpdate() {}
 		virtual void OnRender() {}
 		virtual void OnPreResize() {}
 		virtual void OnResize() {}
 		virtual void OnAddChild(GUIElement::Ptr child) {}
+
+		virtual void OnHoverStart() {}
+		virtual void OnHoverEnd() {}
+
+		virtual void OnClickStart() {}
+		virtual void OnClickEnd() {}
+		virtual void OnClickCancel() {}
 
 		virtual Rectangle& GetScreenRect();
 		virtual Rectangle& GetContentRect();
