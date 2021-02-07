@@ -39,14 +39,14 @@ namespace RLGameGUI
         rect.width += scale.x;
         rect.height += scale.y;
 
-        if (Tint.a != 0)
+        if (fill.a != 0)
         {
             DrawRectangleRec(rect, fill);
         }
         if (outline.a != 0 && OutlineThickness > 0)
         {
-           // rect.height += 1;
-            DrawRectangleLinesEx(rect, OutlineThickness, outline);
+			rect.height += 1;
+			DrawRectangleLinesEx(rect, OutlineThickness, outline);
         }
     }
 
