@@ -45,7 +45,7 @@ namespace RLGameGUI
         }
         if (outline.a != 0 && OutlineThickness > 0)
         {
-            rect.height += 1;
+           // rect.height += 1;
             DrawRectangleLinesEx(rect, OutlineThickness, outline);
         }
     }
@@ -222,7 +222,7 @@ namespace RLGameGUI
             SourceRect.x = backgroundX * xGrid;
             SourceRect.y = backgroundY * yGrid;
             SourceRect.width = xGrid;
-            SourceRect.height = yGrid-1;
+            SourceRect.height = yGrid;
         }
 
         if (hoverX >= 0 && hoverY >= 0)
@@ -318,9 +318,7 @@ namespace RLGameGUI
         if (Background.id == 0)
             Draw(color, Outline, offset, scale);
         else
-        {
             Draw(tx, color, sourceRect, offset, scale);
-        }
 
         if (!Text.empty())
         {

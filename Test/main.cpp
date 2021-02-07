@@ -37,65 +37,82 @@ void main()
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1000, 600, "GUI Test");
 
+	Texture2D background = LoadTexture("resources/hex.png");
+	Color backgroundColor = GetColor(0x1F252D);
+
 	Texture2D logo = LoadTexture("resources/raylib_logo.png");
-	Texture2D atlas = LoadTexture("resources/cubicmap_atlas.png");
-	Texture2D nPatch = LoadTexture("resources/ninepatch_button.png");
-    Texture2D imageButton = LoadTexture("resources/button.png");
+	Texture2D panelBG = LoadTexture("resources/KeyValueBackground.png");
+
+	Texture2D imageButton = LoadTexture("resources/ButtonBackground.png");
+	Texture2D imageButtonHover = LoadTexture("resources/ButtonBackground.hover.png");
+	Texture2D imageButtonDisabled = LoadTexture("resources/ButtonBackground.disabled.png");
+	Texture2D imageButtonPressed = LoadTexture("resources/ButtonBackground.active.png");
+	
+	int fontSize = 26;
+	Font textFont = LoadFontEx("resources/fonts/BebasNeue Book.otf", fontSize, NULL, 0);
+
+	Color textColor = RAYWHITE;
 
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
- 	GUIPanel::Ptr panel = GUIPanel::Create();
- 	panel->Name = "panel1";
- 	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-  	panel->Background = nPatch;
-  	panel->SourceRect.width = (float)nPatch.width;
-  	panel->SourceRect.height = nPatch.height * 0.25f;
-  	panel->SourceRect.y = nPatch.height * 0.75f;
- 	panel->Padding = RelativePoint(8, 8);
- 	panel->Fillmode = PanelFillModes::NPatch;
- 	panel->NPatchGutters = Vector2{ 16, 16 };
- 
- 	panel->Tint = WHITE;
- // 	panel->OutlineThickness = 2;
- // 	panel->Outline = DARKBLUE;
- 	rootScreen->AddElement(panel);
- 
- 	GUIPanel::Ptr panel2 = GUIPanel::Create();
- 	panel2->Name = "Panel2";
- 	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
- 	panel2->Tint = Color{ MAROON.r,MAROON.g,MAROON.b, 128 };
- 	panel2->Outline = BLACK;
- 	panel2->OutlineThickness = 4;
- 
- 	panel->AddChild(panel2);
- 
- 	GUILabel::Ptr label = GUILabel::Create("I am IRON MAN");
- 	label->RelativeBounds = RelativeRect{ 0, 10, 500, 40 };
- 	rootScreen->AddElement(label);
- 
-     GUILabel::Ptr label2 = GUILabel::Create("Centered");
- 	label2->RelativeBounds = RelativeRect{ 0, 20, 500, 40 };
- 	label2->HorizontalAlignment = AlignmentTypes::Center;
-     rootScreen->AddElement(label2);
- 
-     GUILabel::Ptr label3 = GUILabel::Create("Right");
- 	label3->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
- 	label3->HorizontalAlignment = AlignmentTypes::Maximum;
-     rootScreen->AddElement(label3);
- 
-     GUIImage::Ptr panel3 = GUIImage::Create();
- 	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
- 	panel3->Tint = MAROON;
- 	panel3->Background = logo;
- 	rootScreen->AddElement(panel3);
+	GUIPanel::Ptr panel = GUIPanel::Create();
+	panel->Name = "panel1";
+	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+	panel->Background = panelBG;
+	panel->Padding = RelativePoint(16, 16);
+	panel->Fillmode = PanelFillModes::NPatch;
+	panel->NPatchGutters = Vector2{ 16, 16 };
 
-    GUIButton::Ptr button = GUIButton::Create(imageButton);
+	panel->Tint = WHITE;
+	// 	panel->OutlineThickness = 2;
+	// 	panel->Outline = DARKBLUE;
+	rootScreen->AddElement(panel);
+
+	GUIPanel::Ptr panel2 = GUIPanel::Create();
+	panel2->Name = "Panel2";
+	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
+	panel2->Tint = GRAY;
+	panel2->Outline = BLACK;
+	panel2->OutlineThickness = 4;
+
+	panel->AddChild(panel2);
+
+	GUILabel::Ptr label = GUILabel::Create("I am IRON MAN",textFont,fontSize);
+	label->RelativeBounds = RelativeRect{ 0, 10, 500, 40 };
+	label->Tint = textColor;
+	rootScreen->AddElement(label);
+
+	GUILabel::Ptr label2 = GUILabel::Create("Centered", textFont, fontSize);
+	label2->Tint = textColor;
+	label2->RelativeBounds = RelativeRect{ 0, 20, 500, 40 };
+	label2->HorizontalAlignment = AlignmentTypes::Center;
+	rootScreen->AddElement(label2);
+
+	GUILabel::Ptr label3 = GUILabel::Create("Right", textFont, fontSize);
+	label3->Tint = textColor;
+	label3->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
+	label3->HorizontalAlignment = AlignmentTypes::Maximum;
+	rootScreen->AddElement(label3);
+
+	GUIImage::Ptr panel3 = GUIImage::Create();
+	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+	panel3->Tint = WHITE;
+	panel3->Background = logo;
+	rootScreen->AddElement(panel3);
+
+	GUIButton::Ptr button = GUIButton::Create(imageButton);
 	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
-	button->Tint = WHITE;
-    button->HoverTint = ORANGE;
-    button->SetButtonFrames(1, 3, 0, 1, 0, 1, 0, 2, 0, 0);
+	button->TextColor = WHITE;
+	button->TextFont = textFont;
+	button->TextSize = (float)fontSize;
+	button->SetText("Button");
+	button->Fillmode = PanelFillModes::NPatch;
+	button->NPatchGutters = Vector2{ 16, 16 };
+	button->HoverTexture = imageButtonHover;
+	button->DisableTexture = imageButtonDisabled;
+	button->PressTexture = imageButtonPressed;
 
-    rootScreen->AddElement(button);
+	rootScreen->AddElement(button);
 
 	Manager::PushScreen(rootScreen);
 
@@ -104,13 +121,16 @@ void main()
 		Manager::Update();
 
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
+		ClearBackground(backgroundColor);
 
-		DrawLine(GetScreenWidth()/2, 0, GetScreenWidth()/2, GetScreenHeight(), RED);
+		DrawTexturePro(background, Rectangle{ 0,0,GetScreenWidth() * 8.0f,GetScreenHeight() * 8.0f }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, Color{ 255,255,255,64 });
+		//  DrawTextureTiled(background, Rectangle{ 0,0,(float)background.width,(float)background.height }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, 0, WHITE);
+
+	  //	DrawLine(GetScreenWidth()/2, 0, GetScreenWidth()/2, GetScreenHeight(), RED);
 
 		Manager::Render();
 		EndDrawing();
 	}
-	UnloadTexture( logo );
+	UnloadTexture(logo);
 	CloseWindow();
 }

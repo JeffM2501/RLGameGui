@@ -116,10 +116,12 @@ namespace RLGameGUI
 
         GUILabel() {}
         GUILabel(const std::string& text) : Text(text) {}
+        GUILabel(const std::string& text, const Font& font, int size = 16) : Text(text), TextFont(font), TextSize((float)size) {}
 
         typedef std::shared_ptr<GUILabel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUILabel>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
+        inline static Ptr Create(const std::string& text, const Font& font, int size = 16) { return std::make_shared<GUILabel>(text, font, size); }
 
         AlignmentTypes HorizontalAlignment = AlignmentTypes::Minimum;
         AlignmentTypes VerticalAlignment = AlignmentTypes::Minimum;
