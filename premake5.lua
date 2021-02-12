@@ -56,8 +56,6 @@ project "raylib"
 	}
 	files {"raylib/src/*.h", "raylib/src/*.c"}
 	
-
-		
 project "RLGameGui"
 	kind "StaticLib"
 		
