@@ -38,6 +38,9 @@ project "raylib"
 		defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
 		links {"winmm"}
 				
+	filter "action:gmake*"
+		links {"pthread", "GL", "m", "dl", "rt", "X11"}
+	
 	filter{}
 	
 	location "./"
@@ -52,6 +55,8 @@ project "raylib"
 		["Source Files/*"] = {"raylib/src/**.c"},
 	}
 	files {"raylib/src/*.h", "raylib/src/*.c"}
+	
+
 		
 project "RLGameGui"
 	kind "StaticLib"
@@ -81,7 +86,7 @@ project "RLGameGui"
 
 project "test"
 	kind "ConsoleApp"
-	location "test/"
+	location "test"
 	language "C++"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
@@ -94,7 +99,6 @@ project "test"
 	files {"test/**.cpp", "test}/**.h"}
 
 	links {"raylib","RLGameGui"}
-
 	
 	includedirs { "%{wks.name}", "raylib/src", "RLGameGui/include" }
 	
@@ -103,3 +107,7 @@ project "test"
 		dependson {"raylib"}
 		links {"winmm", "raylib.lib"}
 		libdirs {"bin/%{cfg.buildcfg}"}
+		
+	filter "action:gmake*"
+		links {"pthread", "GL", "m", "dl", "rt", "X11"}
+	
