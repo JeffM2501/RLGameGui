@@ -32,7 +32,7 @@
 
 using namespace RLGameGUI;
 
-void main()
+int main( int argc, char** argv)
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1000, 600, "GUI Test");
@@ -135,4 +135,5 @@ void main()
 	}
 	UnloadTexture(logo);
 	CloseWindow();
+	return 0;
 }
