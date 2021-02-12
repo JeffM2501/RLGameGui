@@ -64,8 +64,6 @@ void main()
 	panel->NPatchGutters = Vector2{ 16, 16 };
 
 	panel->Tint = WHITE;
-	// 	panel->OutlineThickness = 2;
-	// 	panel->Outline = DARKBLUE;
 	rootScreen->AddElement(panel);
 
 	GUIPanel::Ptr panel2 = GUIPanel::Create();
@@ -112,6 +110,8 @@ void main()
 	button->DisableTexture = imageButtonDisabled;
 	button->PressTexture = imageButtonPressed;
 
+	button->ElementClicked = [&label3](GUIElement*) {label3->SetText("Clicked"); };
+
 	rootScreen->AddElement(button);
 
 	Manager::PushScreen(rootScreen);
@@ -123,7 +123,9 @@ void main()
 		BeginDrawing();
 		ClearBackground(backgroundColor);
 
-		DrawTexturePro(background, Rectangle{ 0,0,GetScreenWidth() * 8.0f,GetScreenHeight() * 8.0f }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, Color{ 255,255,255,64 });
+		float scale = 4;
+		float offset = (float)GetTime() * 200;
+		DrawTexturePro(background, Rectangle{ offset, offset,GetScreenWidth() * scale,GetScreenHeight() * scale }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, Color{ 255,255,255,64 });
 		//  DrawTextureTiled(background, Rectangle{ 0,0,(float)background.width,(float)background.height }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, 0, WHITE);
 
 	  //	DrawLine(GetScreenWidth()/2, 0, GetScreenWidth()/2, GetScreenHeight(), RED);

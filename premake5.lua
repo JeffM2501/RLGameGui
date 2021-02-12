@@ -23,7 +23,9 @@ workspace "RLGameGui"
 		architecture "x86_64"
 		
 	targetdir "bin/%{cfg.buildcfg}/"
-		
+	
+	defines{"PLATFORM_DESKTOP", "GRAPHICS_API_OPENGL_33"}
+	
 project "raylib"
 	filter "configurations:Debug.DLL OR Release.DLL"
 		kind "SharedLib"
@@ -50,8 +52,6 @@ project "raylib"
 		["Source Files/*"] = {"raylib/src/**.c"},
 	}
 	files {"raylib/src/*.h", "raylib/src/*.c"}
-	
-	defines{"PLATFORM_DESKTOP", "GRAPHICS_API_OPENGL_33"}
 		
 project "RLGameGui"
 	kind "StaticLib"
@@ -94,9 +94,12 @@ project "test"
 	files {"test/**.cpp", "test}/**.h"}
 
 	links {"raylib","RLGameGui"}
+
 	
 	includedirs { "%{wks.name}", "raylib/src", "RLGameGui/include" }
 	
 	filter "action:vs*"
 		defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
-		links {"winmm"}
+		dependson {"raylib"}
+		links {"winmm", "raylib.lib"}
+		libdirs {"bin/%{cfg.buildcfg}"}

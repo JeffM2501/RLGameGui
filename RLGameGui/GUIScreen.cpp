@@ -58,6 +58,8 @@ namespace RLGameGUI
 
 	void GUIScreen::Update()
 	{
+		PostRenderCallbacks.clear();
+
 		if (IsWindowResized())
 			DoResize();
 
@@ -74,6 +76,9 @@ namespace RLGameGUI
 		OnRender();
         for (auto child : Elements)
             child->Render();
+
+		for (auto& callback : PostRenderCallbacks)
+			callback();
 	}
 
     GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)

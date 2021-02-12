@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include "GUIElement.h"
 #include "RootElement.h"
@@ -55,6 +56,10 @@ namespace RLGameGUI
 
 		GUIElement::Ptr AddElement(GUIElement::Ptr element);
 
+		typedef std::function<void()> ScreenEventCallback;
+
+		inline void AddPostRenderCallback(ScreenEventCallback callback) { PostRenderCallbacks.emplace_back(callback); }
+
 	protected:
 		bool Active = false;
 		RootElement Root;
@@ -68,5 +73,7 @@ namespace RLGameGUI
 		virtual void OnRender() {}
 
 		virtual void OnElementAdd(GUIElement::Ptr element) {}
+
+		std::vector<ScreenEventCallback> PostRenderCallbacks;
 	};
 }

@@ -333,6 +333,53 @@ namespace RLGameGUI
             DrawTextRec(fontToUse, Text.c_str(), rect, TextSize, Spacing, false, labelColor);
         }
     }
+
+
+    std::vector<std::string>::const_iterator GUIComboBox::Begin()
+    {
+        return Items.cbegin();
+    }
+
+    std::vector<std::string>::const_iterator GUIComboBox::End()
+    {
+        return Items.cend();
+    }
+
+    std::vector<std::string>::const_iterator GUIComboBox::Erase(const std::vector<std::string>::const_iterator itr)
+    {
+        return Items.erase(itr);
+    }
+
+    void GUIComboBox::Add(const std::string& item)
+    {
+        Items.emplace_back(item);
+    }
+
+    void GUIComboBox::Clear()
+    {
+        Items.clear();
+    }
+
+    int GUIComboBox::GetSelectedItemIndex()
+    {
+        return SelectedItem;
+    }
+
+    void GUIComboBox::SetSelectedItemIndex(int item)
+    {
+        if (item < 0 || item >= Items.size())
+            SelectedItem = -1;
+
+        SelectedItem = item;
+    }
+
+    const std::string* GUIComboBox::GetItem(int item)
+    {
+        if (item < 0 || item >= Items.size())
+            return nullptr;
+
+        return &(Items[item]);
+    }
 }
 
 

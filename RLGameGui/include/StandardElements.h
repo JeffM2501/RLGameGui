@@ -189,4 +189,35 @@ namespace RLGameGUI
         Rectangle TextRect = { 0,0,0,0 };
         float Spacing = 1;
     };
+
+    class GUIComboBox : public GUIPanel
+    {
+    public:
+        Color TextColor = BLACK;
+        Font TextFont = GetFontDefault();
+        float TextSize = 20;
+
+        GUIComboBox() {}
+        GUIComboBox(const Texture2D& texture) { Background = texture; }
+
+        typedef std::shared_ptr<GUIComboBox> Ptr;
+        inline static Ptr Create() { return std::make_shared<GUIComboBox>(); }
+        inline static Ptr Create(const Texture2D& texture) { return std::make_shared<GUIComboBox>(texture); }
+
+        std::vector<std::string>::const_iterator Begin();
+        std::vector<std::string>::const_iterator End();
+        std::vector<std::string>::const_iterator Erase(const std::vector<std::string>::const_iterator itr);
+        void Add(const std::string& item);
+        void Clear();
+
+        int GetSelectedItemIndex();
+        void SetSelectedItemIndex(int item);
+
+        const std::string* GetItem(int item);
+
+    protected:
+        std::vector<std::string> Items;
+
+        int SelectedItem = -1;
+    };
 }
