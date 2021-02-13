@@ -1,3 +1,6 @@
+
+	
+
 workspace "RLGameGui"
 	configurations { "Debug","Debug.DLL", "Release", "Release.DLL" }
 	platforms { "x64"}
@@ -26,35 +29,36 @@ workspace "RLGameGui"
 	
 	defines{"PLATFORM_DESKTOP", "GRAPHICS_API_OPENGL_33"}
 	
+filter {"action:vs*","action:gmake*"}
 project "raylib"
-	filter "configurations:Debug.DLL OR Release.DLL"
-		kind "SharedLib"
-		defines {"BUILD_LIBTYPE_SHARED"}
+		filter "configurations:Debug.DLL OR Release.DLL"
+			kind "SharedLib"
+			defines {"BUILD_LIBTYPE_SHARED"}
+			
+		filter "configurations:Debug OR Release"
+			kind "StaticLib"
+			
+		filter "action:vs*"
+			defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
+			links {"winmm"}
+					
+		filter "action:gmake*"
+			links {"pthread", "GL", "m", "dl", "rt", "X11"}
 		
-	filter "configurations:Debug OR Release"
-		kind "StaticLib"
+		filter{}
 		
-	filter "action:vs*"
-		defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
-		links {"winmm"}
-				
-	filter "action:gmake*"
-		links {"pthread", "GL", "m", "dl", "rt", "X11"}
-	
-	filter{}
-	
-	location "./"
-	language "C++"
-	targetdir "bin/%{cfg.buildcfg}"
-	cppdialect "C++17"
-	
-	includedirs { "raylib/src", "raylib/src/external/glfw/include"}
-	vpaths 
-	{
-		["Header Files"] = { "raylib/src/**.h"},
-		["Source Files/*"] = {"raylib/src/**.c"},
-	}
-	files {"raylib/src/*.h", "raylib/src/*.c"}
+		location "./"
+		language "C++"
+		targetdir "bin/%{cfg.buildcfg}"
+		cppdialect "C++17"
+		
+		includedirs { "raylib/src", "raylib/src/external/glfw/include"}
+		vpaths 
+		{
+			["Header Files"] = { "raylib/src/**.h"},
+			["Source Files/*"] = {"raylib/src/**.c"},
+		}
+
 	
 project "RLGameGui"
 	kind "StaticLib"
@@ -96,7 +100,7 @@ project "test"
 	}
 	files {"test/**.cpp", "test}/**.h"}
 
-	links {"raylib","RLGameGui"}
+	links {"RLGameGui"}
 	
 	includedirs { "%{wks.name}", "raylib/src", "RLGameGui/include" }
 	
@@ -108,4 +112,7 @@ project "test"
 		
 	filter "action:gmake*"
 		links {"pthread", "GL", "m", "dl", "rt", "X11"}
+		
+	filter "action:xcode*"
+		libdirs {"bin/%{cfg.buildcfg}"}
 	
