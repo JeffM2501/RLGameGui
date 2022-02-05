@@ -1,11 +1,13 @@
-
-	
+newoption 
+{
+   trigger = "opengl43",
+   description = "use OpenGL 4.3"
+}
 
 workspace "RLGameGui"
 	configurations { "Debug","Debug.DLL", "Release", "Release.DLL" }
-	platforms { "x64"}
-	defaultplatform "x64"
-	
+	platforms { "x64", "x86"}
+
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
@@ -25,11 +27,11 @@ workspace "RLGameGui"
 	filter { "platforms:x64" }
 		architecture "x86_64"
 		
+	filter { "platforms:x86" }
+		architecture "x86"
+
 	targetdir "bin/%{cfg.buildcfg}/"
-	
-	defines{"PLATFORM_DESKTOP", "GRAPHICS_API_OPENGL_33"}
-	
-filter {"action:vs*","action:gmake*"}
+
 project "raylib"
 		filter "configurations:Debug.DLL OR Release.DLL"
 			kind "SharedLib"
@@ -39,18 +41,28 @@ project "raylib"
 			kind "StaticLib"
 			
 		filter "action:vs*"
-			defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
-			links {"winmm"}
-					
-		filter "action:gmake*"
-			links {"pthread", "GL", "m", "dl", "rt", "X11"}
+			defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
+			characterset ("MBCS")
 		
+		filter "system:windows"
+			defines{"_WIN32"}
+			links {"winmm", "kernel32", "opengl32", "kernel32", "gdi32"}
+			
+		filter "system:linux"
+			links {"pthread", "GL", "m", "dl", "rt", "X11"}
+			
 		filter{}
 		
-		location "./"
-		language "C++"
+		defines{"PLATFORM_DESKTOP"}
+		if (_OPTIONS["opengl43"]) then
+			defines{"GRAPHICS_API_OPENGL_43"}
+		else
+			defines{"GRAPHICS_API_OPENGL_33"}
+		end
+	
+		location "build"
+		language "C"
 		targetdir "bin/%{cfg.buildcfg}"
-		cppdialect "C++17"
 		
 		includedirs { "raylib/src", "raylib/src/external/glfw/include"}
 		vpaths 
@@ -58,13 +70,10 @@ project "raylib"
 			["Header Files"] = { "raylib/src/**.h"},
 			["Source Files/*"] = {"raylib/src/**.c"},
 		}
-
-	
+		files {"raylib/src/*.h", "raylib/src/*.c"}
+		
 project "RLGameGui"
 	kind "StaticLib"
-		
-	filter "configurations:Debug OR Release"
-		kind "StaticLib"
 		
 	filter "action:vs*"
 		defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
@@ -77,18 +86,18 @@ project "RLGameGui"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
 	
-	includedirs { "raylib/src","RLGameGui/","RLGameGui/include/"}
+	includedirs { "raylib/src","RLGameGui","RLGameGui/include"}
 	vpaths 
 	{
-		["Header Files"] = { "RLGameGui/*.h","RLGameGui/include/**.h"},
-		["Source Files"] = {"RLGameGui/**.cpp"},
+		["Header Files"] = { "RLGameGui/**.h"},
+		["Source Files"] = {"RLGameGui/**.c"},
 	}
 	files {"RLGameGui/**.h", "RLGameGui/**.cpp"}
-
-
+	
+		
 project "test"
 	kind "ConsoleApp"
-	location "test"
+	location "Game"
 	language "C++"
 	targetdir "bin/%{cfg.buildcfg}"
 	cppdialect "C++17"
@@ -98,21 +107,29 @@ project "test"
 		["Header Files"] = { "**.h"},
 		["Source Files"] = {"**.c", "**.cpp"},
 	}
-	files {"test/**.cpp", "test}/**.h"}
+	files {"test/**.c", "test/**.cpp", "test/**.h"}
 
-	links {"RLGameGui"}
+	links {"raylib", "RLGameGui"}
 	
-	includedirs { "%{wks.name}", "raylib/src", "RLGameGui/include" }
+	includedirs { "test", "raylib/src" , "RLGameGui/include"}
+	
+	defines{"PLATFORM_DESKTOP"}
+	if (_OPTIONS["opengl43"]) then
+		defines{"GRAPHICS_API_OPENGL_43"}
+	else
+		defines{"GRAPHICS_API_OPENGL_33"}
+	end
 	
 	filter "action:vs*"
 		defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS", "_WIN32"}
 		dependson {"raylib"}
-		links {"winmm", "raylib.lib"}
+		links {"raylib.lib"}
+        characterset ("MBCS")
+		
+	filter "system:windows"
+		defines{"_WIN32"}
+		links {"winmm", "kernel32", "opengl32", "kernel32", "gdi32"}
 		libdirs {"bin/%{cfg.buildcfg}"}
 		
-	filter "action:gmake*"
+	filter "system:linux"
 		links {"pthread", "GL", "m", "dl", "rt", "X11"}
-		
-	filter "action:xcode*"
-		libdirs {"bin/%{cfg.buildcfg}"}
-	
