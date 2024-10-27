@@ -28,6 +28,7 @@
 
 #include "StandardElements.h"
 #include "raylib.h"
+#include "raymath.h"
 
 namespace RLGameGUI
 {
@@ -46,8 +47,26 @@ namespace RLGameGUI
         if (outline.a != 0 && OutlineThickness > 0)
         {
 			rect.height += 1;
-			DrawRectangleLinesEx(rect, OutlineThickness, outline);
+			DrawRectangleLinesEx(rect, float(OutlineThickness), outline);
         }
+    }
+
+    void DrawTextureTiled(const Texture2D& fill, const Rectangle& source, const Rectangle& rect, Color& tint)
+    {
+        BeginScissorMode(int(rect.x), int(rect.y), int(rect.width), int(rect.height));
+
+        int hCount = int((source.width / rect.width) + 0.5f);
+        int vCount = int((source.height / rect.height) + 0.5f);
+
+        for (int v = 0; v < vCount; v++)
+        {
+            for (int h = 0; h < hCount; h++)
+            {
+                DrawTexturePro(fill, source, Rectangle{ h * source.width,v * source.height, source.width,source.height }, Vector2Zeros, 0, tint);
+            }
+        }
+
+        EndScissorMode();
     }
 
     void GUIPanel::Draw(const Texture2D &fill, Color tint, const Rectangle& source, const Vector2& offset, const Vector2& scale)
@@ -64,7 +83,7 @@ namespace RLGameGUI
 
         if (Fillmode == PanelFillModes::Tile)
         {
-            DrawTextureTiled(fill, source, rect, V2Zero, 0, 1, tint);
+            DrawTextureTiled(fill, source, rect, tint);
         }
         else if (Fillmode == PanelFillModes::Fill)
         {
@@ -78,11 +97,11 @@ namespace RLGameGUI
                 NPatchData.top = NPatchData.bottom = (int)NPatchGutters.y;
 
                 if (NPatchGutters.x == 0)
-                    NPatchData.type = NPT_3PATCH_VERTICAL;
+                    NPatchData.layout = NPATCH_THREE_PATCH_HORIZONTAL;
                 else if (NPatchGutters.y == 0)
-                    NPatchData.type = NPT_3PATCH_HORIZONTAL;
+                    NPatchData.layout = NPATCH_THREE_PATCH_VERTICAL;
                 else
-                    NPatchData.type = NPT_9PATCH;
+                    NPatchData.layout = NPATCH_NINE_PATCH;
             } 
             NPatchData.source = source;
 
@@ -203,13 +222,20 @@ namespace RLGameGUI
         TextRect = ResizeTextBox(TextSize, Text, TextFont, Spacing, ScreenRect, HorizontalAlignment, VerticalAlignment); 
     }
 
+    void DrawTextRect(const Font& fontToUse, const std::string& text, const Rectangle& rect, float size, float spacing, Color tint)
+    {
+        BeginScissorMode(int(rect.x), int(rect.y), int(rect.width), int(rect.height));
+        DrawTextEx(fontToUse, text.c_str(), Vector2{ rect.x, rect.y }, size, spacing, tint);
+        EndScissorMode();
+    }
+
     void GUILabel::OnRender()
     {
         Font fontToUse = TextFont;
         if (TextFont.texture.id == 0)
             fontToUse = GetFontDefault();
 
-        DrawTextRec(fontToUse, Text.c_str(), TextRect, TextSize, Spacing, false, Tint);
+        DrawTextRect(fontToUse, Text.c_str(), TextRect, TextSize, Spacing, Tint);
     }
 
     void GUIButton::SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX, int hoverY, int pressX, int pressY, int disableX, int disableY )
@@ -330,7 +356,7 @@ namespace RLGameGUI
             rect.x += offset.x;
             rect.y += offset.y;
 
-            DrawTextRec(fontToUse, Text.c_str(), rect, TextSize, Spacing, false, labelColor);
+            DrawTextRect(fontToUse, Text.c_str(), rect, TextSize, Spacing, labelColor);
         }
     }
 
@@ -367,7 +393,7 @@ namespace RLGameGUI
 
     void GUIComboBox::SetSelectedItemIndex(int item)
     {
-        if (item < 0 || item >= Items.size())
+        if (item < 0 || item >= int(Items.size()))
             SelectedItem = -1;
 
         SelectedItem = item;
@@ -375,7 +401,7 @@ namespace RLGameGUI
 
     const std::string* GUIComboBox::GetItem(int item)
     {
-        if (item < 0 || item >= Items.size())
+        if (item < 0 || item >= int(Items.size()))
             return nullptr;
 
         return &(Items[item]);

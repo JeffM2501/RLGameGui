@@ -352,3 +352,4 @@ MigrationBackup/
 *.vcxproj
 *.filters
 /premake5.exe
+raylib-master
