@@ -38,7 +38,9 @@
 
 namespace RLGameGUI
 {
-	class GUIScreen
+	using EventHandler = std::function<void(GUIElement&, GUIElementEvent,void*)>;
+
+	class GUIScreen : public RootElement
 	{
 	public:
 		std::string Name;
@@ -60,9 +62,10 @@ namespace RLGameGUI
 
 		inline void AddPostRenderCallback(ScreenEventCallback callback) { PostRenderCallbacks.emplace_back(callback); }
 
+		void RegisterEventHandler(const std::string& elmentId, GUIElementEvent eventType, EventHandler handler);
+
 	protected:
 		bool Active = false;
-		RootElement Root;
         std::vector<GUIElement::Ptr> Elements;
 
 		void DoResize();
@@ -74,6 +77,15 @@ namespace RLGameGUI
 
 		virtual void OnElementAdd(GUIElement::Ptr element) {}
 
+        void PostEvent(GUIElement* element, GUIElementEvent eventType, void* data) override;
+
 		std::vector<ScreenEventCallback> PostRenderCallbacks;
+
+		struct EventHandlerInfo
+		{
+			GUIElementEvent EventType;
+			EventHandler	Handler;
+		};
+		std::unordered_map<std::string, std::vector<EventHandlerInfo>> EventHandlers;
 	};
 }

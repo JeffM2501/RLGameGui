@@ -51,7 +51,7 @@ namespace RLGameGUI
 
 	void GUIScreen::DoResize()
     {
-        Root.Resize();
+        Resize();
         for (auto child : Elements)
             child->Resize();
 	}
@@ -83,10 +83,38 @@ namespace RLGameGUI
 
     GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)
     {
-		element->Parent = &Root;
+		element->Parent = this;
 		Elements.emplace_back(element);
 		OnElementAdd(element);
 
 		return element;
     }
+
+    void GUIScreen::RegisterEventHandler(const std::string& elementId, GUIElementEvent eventType, EventHandler handler)
+    {
+		auto itr = EventHandlers.find(elementId);
+		if (itr == EventHandlers.end())
+			itr = EventHandlers.insert_or_assign(elementId, std::vector<EventHandlerInfo>()).first;
+
+		EventHandlerInfo info;
+		info.EventType = eventType;
+		info.Handler = handler;
+		itr->second.push_back(info);
+    }
+
+    void GUIScreen::PostEvent(GUIElement* element, GUIElementEvent eventType, void* data)
+	{
+		if (!element)
+			return;
+
+		auto itr = EventHandlers.find(element->Id);
+		if (itr == EventHandlers.end())
+			return;
+
+		for (auto handler : itr->second)
+		{
+			if (handler.EventType == eventType)
+				handler.Handler(*element, eventType, data);
+		}
+	}
 }

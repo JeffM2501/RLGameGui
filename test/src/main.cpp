@@ -99,6 +99,7 @@ int main( int argc, char** argv)
 	rootScreen->AddElement(panel3);
 
 	GUIButton::Ptr button = GUIButton::Create(imageButton);
+	button->Id = "Clickable Button";
 	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
 	button->TextColor = WHITE;
 	button->TextFont = textFont;
@@ -110,7 +111,9 @@ int main( int argc, char** argv)
 	button->DisableTexture = imageButtonDisabled;
 	button->PressTexture = imageButtonPressed;
 
-	button->ElementClicked = [&label3](GUIElement*) {label3->SetText("Clicked"); };
+
+	// register a click event handler
+	rootScreen->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&label3](GUIElement&, GUIElementEvent, void*) {label3->SetText("Clicked"); });
 
 	rootScreen->AddElement(button);
 

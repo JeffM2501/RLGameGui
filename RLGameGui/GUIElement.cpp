@@ -41,7 +41,10 @@ namespace RLGameGUI
 		if (mousePostion.x < 0 || !CheckCollisionPointRec(mousePostion, GetScreenRect()))
 		{
 			if (Hovered)
+			{
 				OnHoverEnd();
+				PostEvent(this, GUIElementEvent::Hover, (void*)(0));
+			}
 			Hovered = false;
 
 			if (Clicked)
@@ -54,9 +57,10 @@ namespace RLGameGUI
 			{
 				Hovered = true;
 				OnHoverStart();
+				PostEvent(this, GUIElementEvent::Hover, (void*)(1));
 			}
 
-			if (IsMouseButtonDown(0))
+			if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
 			{
 				if (!Clicked)
 				{
@@ -68,6 +72,7 @@ namespace RLGameGUI
 			{
 				Clicked = false;
 				OnClickEnd();
+				PostEvent(this, GUIElementEvent::Click, nullptr);
 				if (ElementClicked != nullptr)
 					ElementClicked(this);
 			}
@@ -136,6 +141,12 @@ namespace RLGameGUI
             Resize();
 
         return ContentRect;
+	}
+
+	void GUIElement::PostEvent(GUIElement * element, GUIElementEvent eventType, void* data)
+	{
+		if (Parent)
+			Parent->PostEvent(element, eventType, data);
 	}
 
 	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)

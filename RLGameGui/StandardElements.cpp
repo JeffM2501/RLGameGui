@@ -276,7 +276,6 @@ namespace RLGameGUI
         }
     }
 
-
     void GUIButton::OnResize()
     {
         TextRect = ResizeTextBox(TextSize, Text, TextFont, Spacing, ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);

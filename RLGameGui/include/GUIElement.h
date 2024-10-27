@@ -137,10 +137,20 @@ namespace RLGameGUI
 		Rectangle Resolve(const Rectangle& parrentScreenRect);
 	};
 
+	enum class GUIElementEvent
+	{
+		None,
+		Hover,
+		Click,
+		Changed,
+	};
+
 	class GUIElement
 	{
 	public:
 		std::string Name;
+
+		std::string Id;
 
 		void Update(Vector2 mousePosition);
 		void Render();
@@ -185,6 +195,8 @@ namespace RLGameGUI
 
 		virtual Rectangle& GetScreenRect();
 		virtual Rectangle& GetContentRect();
+
+		virtual void PostEvent(GUIElement* element, GUIElementEvent eventType, void* data);
 
 		Rectangle ScreenRect = { 0,0,0,0 };
 		Rectangle ContentRect = { 0,0,0,0 };
