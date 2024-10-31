@@ -30,15 +30,25 @@
 
 #include "GUIElement.h"
 #include "raylib.h"
+#include "raymath.h"
 
 namespace RLGameGUI
 {
-    static Vector2 V2Zero = { 0, 0 };
-    static Vector2 V2One = { 1.0f, 1.0f };
+    struct TextureRecord
+    {
+        std::string Name;
+        bool Valid() const { return !Name.empty(); }
+        Texture2D GetTexture();
+
+    private:
+        Texture2D Texture = { 0 };
+    };
 
     class GUIFrame : public GUIElement
     {
     public:
+        DEFINE_ELEMENT(GUIFrame)
+
         GUIFrame() { Renders = false; }
     };
 
@@ -52,11 +62,13 @@ namespace RLGameGUI
 	class GUIPanel : public GUIElement
 	{
 	public:
+        DEFINE_ELEMENT(GUIPanel)
+
 		Color Tint = WHITE;
         Color Outline = BLANK;
         int OutlineThickness = 0;
 
-        Texture2D Background = { 0 };
+        TextureRecord Background;
         Rectangle SourceRect = { 0,0,0,0 };
 
         PanelFillModes Fillmode = PanelFillModes::Fill;
@@ -65,12 +77,12 @@ namespace RLGameGUI
 
         GUIPanel() {};
         GUIPanel(Color tint) : Tint(Tint) {};
-        GUIPanel(Texture2D img) : Background(img) {};
+        GUIPanel(const std::string& img) { Background.Name = img; };
 
 		typedef std::shared_ptr<GUIPanel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIPanel>(); }
         inline static Ptr Create(Color tint) { return std::make_shared<GUIPanel>(tint); }
-        inline static Ptr Create(Texture2D img) { return std::make_shared<GUIPanel>(img); }
+        inline static Ptr Create(const std::string& img) { return std::make_shared<GUIPanel>(img); }
 
 	protected:
       	void OnRender() override;
@@ -84,18 +96,20 @@ namespace RLGameGUI
     class GUIImage : public GUIElement
     {
     public:
+        DEFINE_ELEMENT(GUIImage)
+
         Color Tint = WHITE;
-        Texture2D Background = { 0 };
+        TextureRecord Background;
         Rectangle SourceRect = { 0,0,0,0 };
 
         bool Clip = false;
 
         GUIImage() {}
-        GUIImage(Texture2D img) : Background(img) {}
+        GUIImage(const std::string& img) { Background.Name = img; }
 
         typedef std::shared_ptr<GUIImage> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIImage>(); }
-        inline static Ptr Create(Texture2D img) { return std::make_shared<GUIImage>(img); }
+        inline static Ptr Create(const std::string& img) { return std::make_shared<GUIImage>(img); }
 
     protected:
         void OnUpdate() override;
@@ -110,6 +124,8 @@ namespace RLGameGUI
     class GUILabel : public GUIElement
     {
     public:
+        DEFINE_ELEMENT(GUILabel)
+
         Color Tint = BLACK;
         Font TextFont = GetFontDefault();
         float TextSize = 20;
@@ -142,38 +158,39 @@ namespace RLGameGUI
     class GUIButton : public GUIPanel
     {
     public:
+        DEFINE_ELEMENT(GUIButton)
+
         Color TextColor = BLACK;
         Font TextFont = GetFontDefault();
         float TextSize = 20;
 
         Color HoverTint = BLANK;
         Rectangle HoverSourceRect = { 0,0,0,0 };
-        Texture2D HoverTexture = { 0 };
+        TextureRecord HoverTexture;
         Color HoverTextColor = BLANK;
 
         Color PressTint = BLANK;
         Rectangle PressSourceRect = { 0,0,0,0 };
-        Texture2D PressTexture = { 0 };
+        TextureRecord PressTexture;
         Color PressTextColor = BLANK;
 
         Color DisableTint = DARKGRAY;
         Rectangle DisableSourceRect = { 0,0,0,0 };
-        Texture2D DisableTexture = { 0 };
+        TextureRecord DisableTexture;
         Color DisableTextColor = GRAY;
 
-        Vector2 HoverOffset = V2Zero;
-        Vector2 HoverScale = V2Zero;
-        Vector2 PressOffset = V2Zero;
-        Vector2 PressScale = V2Zero;
+        Vector2 HoverOffset = Vector2Zeros;
+        Vector2 HoverScale = Vector2Zeros;
+        Vector2 PressOffset = Vector2Zeros;
+        Vector2 PressScale = Vector2Zeros;
 
         GUIButton() {}
-        GUIButton(const std::string& text) : Text(text) {}
-        GUIButton(const Texture2D& texture) { Background = texture; }
+        GUIButton(const std::string& text, const std::string& background = std::string()) : Text(text) { Background.Name = background; }
 
         typedef std::shared_ptr<GUIButton> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIButton>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUIButton>(text); }
-        inline static Ptr Create(const Texture2D& texture) { return std::make_shared<GUIButton>(texture); }
+        inline static Ptr Create(const std::string& text, const std::string& texture) { return std::make_shared<GUIButton>(text,texture); }
 
         inline virtual void SetText(const std::string& text) { Text = text; RelativeBounds.SetDirty(); }
         inline const std::string& GetText() { return Text; }
@@ -193,16 +210,18 @@ namespace RLGameGUI
     class GUIComboBox : public GUIPanel
     {
     public:
+        DEFINE_ELEMENT(GUIComboBox)
+
         Color TextColor = BLACK;
         Font TextFont = GetFontDefault();
         float TextSize = 20;
 
         GUIComboBox() {}
-        GUIComboBox(const Texture2D& texture) { Background = texture; }
+        GUIComboBox(const std::string& texture) { Background.Name = texture; }
 
         typedef std::shared_ptr<GUIComboBox> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIComboBox>(); }
-        inline static Ptr Create(const Texture2D& texture) { return std::make_shared<GUIComboBox>(texture); }
+        inline static Ptr Create(const std::string& texture) { return std::make_shared<GUIComboBox>(texture); }
 
         std::vector<std::string>::const_iterator Begin();
         std::vector<std::string>::const_iterator End();

@@ -28,18 +28,29 @@
 
 #pragma once
 
-#include "GUIScreen.h"
+#include <string>
 #include <functional>
+#include <memory>
 
 namespace RLGameGUI
 {
-	namespace Manager
-	{
-		void Update();
-		void Render();
-		
-		void PushScreen(GUIScreen::Ptr screen);
-		GUIScreen::Ptr PopScreen();
-		GUIScreen::Ptr TopScreen();
-	}
+    class GUIElement;
+    class GUIScreen;
+
+    namespace GUIElementFactory
+    {
+        void Register(const std::string& typeName, std::function<std::shared_ptr<GUIElement>()> callback);
+        std::shared_ptr<GUIElement> Create(const std::string& typeName);
+    }
+
+    namespace GUIScreenReader
+    {
+        std::shared_ptr<GUIScreen> Read(const std::string& file);
+        std::shared_ptr<GUIScreen> ReadJson(const char* data);
+    }
+
+    namespace GUIScreenWriter
+    {
+        bool Write(const std::string& file, GUIScreen* screen);
+    }
 }

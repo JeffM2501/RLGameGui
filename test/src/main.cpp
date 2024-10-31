@@ -29,6 +29,9 @@
 #include "raylib.h"
 #include "RLGameGui.h"
 #include "StandardElements.h"
+#include "GUITextureManager.h"
+
+#include "GUIScreenIO.h"
 
 using namespace RLGameGUI;
 
@@ -37,16 +40,18 @@ int main( int argc, char** argv)
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1000, 600, "GUI Test");
 
-	Texture2D background = LoadTexture("resources/hex.png");
+	TextureManager::SetResourceDir("resources");
+
+	Texture background = LoadTexture("resources/hex.png");
 	Color backgroundColor = GetColor(0x1F252D);
 
-	Texture2D logo = LoadTexture("resources/raylib_logo.png");
-	Texture2D panelBG = LoadTexture("resources/KeyValueBackground.png");
+	std::string logo = ("raylib_logo.png");
+	std::string panelBG = ("KeyValueBackground.png");
 
-	Texture2D imageButton = LoadTexture("resources/ButtonBackground.png");
-	Texture2D imageButtonHover = LoadTexture("resources/ButtonBackground.hover.png");
-	Texture2D imageButtonDisabled = LoadTexture("resources/ButtonBackground.disabled.png");
-	Texture2D imageButtonPressed = LoadTexture("resources/ButtonBackground.active.png");
+	std::string imageButton = ("ButtonBackground.png");
+	std::string imageButtonHover = ("ButtonBackground.hover.png");
+	std::string imageButtonDisabled = ("ButtonBackground.disabled.png");
+	std::string imageButtonPressed = ("ButtonBackground.active.png");
 	
 	int fontSize = 26;
 	Font textFont = LoadFontEx("resources/fonts/BebasNeue Book.otf", fontSize, NULL, 0);
@@ -58,7 +63,7 @@ int main( int argc, char** argv)
 	GUIPanel::Ptr panel = GUIPanel::Create();
 	panel->Name = "panel1";
 	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-	panel->Background = panelBG;
+	panel->Background.Name = panelBG;
 	panel->Padding = RelativePoint(16, 16);
 	panel->Fillmode = PanelFillModes::NPatch;
 	panel->NPatchGutters = Vector2{ 16, 16 };
@@ -95,10 +100,10 @@ int main( int argc, char** argv)
 	GUIImage::Ptr panel3 = GUIImage::Create();
 	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
 	panel3->Tint = WHITE;
-	panel3->Background = logo;
+	panel3->Background.Name = logo;
 	rootScreen->AddElement(panel3);
 
-	GUIButton::Ptr button = GUIButton::Create(imageButton);
+	GUIButton::Ptr button = GUIButton::Create(std::string(), imageButton);
 	button->Id = "Clickable Button";
 	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
 	button->TextColor = WHITE;
@@ -107,9 +112,9 @@ int main( int argc, char** argv)
 	button->SetText("Button");
 	button->Fillmode = PanelFillModes::NPatch;
 	button->NPatchGutters = Vector2{ 16, 16 };
-	button->HoverTexture = imageButtonHover;
-	button->DisableTexture = imageButtonDisabled;
-	button->PressTexture = imageButtonPressed;
+	button->HoverTexture.Name = imageButtonHover;
+	button->DisableTexture.Name = imageButtonDisabled;
+	button->PressTexture.Name = imageButtonPressed;
 
 
 	// register a click event handler
@@ -118,6 +123,10 @@ int main( int argc, char** argv)
 	rootScreen->AddElement(button);
 
 	Manager::PushScreen(rootScreen);
+
+
+    GUIScreenWriter::Write("test.json", rootScreen.get());
+
 
 	while (!WindowShouldClose())
 	{
@@ -136,7 +145,7 @@ int main( int argc, char** argv)
 		Manager::Render();
 		EndDrawing();
 	}
-	UnloadTexture(logo);
+	UnloadTexture(background);
 	CloseWindow();
 	return 0;
 }

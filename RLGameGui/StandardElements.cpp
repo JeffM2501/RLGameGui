@@ -29,9 +29,19 @@
 #include "StandardElements.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "GUITextureManager.h"
 
 namespace RLGameGUI
 {
+    Texture2D TextureRecord::GetTexture()
+    {
+        if (Texture.id != 0)
+            return Texture;
+
+        Texture = TextureManager::GetTexture(Name);
+        return Texture;
+    }
+
     void GUIPanel::Draw(Color fill, Color outline, const Vector2& offset, const Vector2& scale)
     {
         Rectangle rect = GetScreenRect();
@@ -87,7 +97,7 @@ namespace RLGameGUI
         }
         else if (Fillmode == PanelFillModes::Fill)
         {
-            DrawTexturePro(fill, source, rect, V2Zero, 0, tint);
+            DrawTexturePro(fill, source, rect, Vector2Zeros, 0, tint);
         }
         else if (Fillmode == PanelFillModes::NPatch)
         {
@@ -105,24 +115,24 @@ namespace RLGameGUI
             } 
             NPatchData.source = source;
 
-            DrawTextureNPatch(fill, NPatchData, rect, V2Zero, 0, tint);
+            DrawTextureNPatch(fill, NPatchData, rect, Vector2Zeros, 0, tint);
         }
     }
 
 	void GUIPanel::OnRender()
 	{
-        if (Background.id == 0)
-            Draw(Tint, Outline, V2Zero, V2Zero);
+        if (!Background.Valid())
+            Draw(Tint, Outline, Vector2Zeros, Vector2Zeros);
         else
-            Draw(Background, Tint, SourceRect, V2Zero, V2Zero);
+            Draw(Background.GetTexture(), Tint, SourceRect, Vector2Zeros, Vector2Zeros);
 	}
 
     void GUIImage::OnRender()
     {
-		if (Background.id == 0)
+		if (!Background.Valid())
 			DrawRectangleRec(GetScreenRect(), Tint);
 		else
-			DrawTexturePro(Background, RealSourceRect,RealDestRect, Vector2{ 0,0 }, 0, Tint);
+			DrawTexturePro(Background.GetTexture(), RealSourceRect, RealDestRect, Vector2Zeros, 0, Tint);
     }
 
     void GUIImage::OnUpdate()
@@ -134,19 +144,19 @@ namespace RLGameGUI
     {
         if (RelativeBounds.Size.IsZero())
         {
-            RelativeBounds.Size = RelativePoint(Background.width, Background.height);
+            RelativeBounds.Size = RelativePoint(Background.GetTexture().width, Background.GetTexture().height);
         }
 
         if (SourceRect.width == 0)
         {
-            SourceRect.width = (float)Background.width;
-            SourceRect.height = (float)Background.height;
+            SourceRect.width = (float)Background.GetTexture().width;
+            SourceRect.height = (float)Background.GetTexture().height;
         }
     }
 
     void GUIImage::OnResize()
     {
-        if (Background.id == 0)
+        if (!Background.Valid())
             return;
 
         RealSourceRect = SourceRect;
@@ -240,8 +250,8 @@ namespace RLGameGUI
 
     void GUIButton::SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX, int hoverY, int pressX, int pressY, int disableX, int disableY )
     {
-        float xGrid = (float)Background.width / (float)framesX;
-        float yGrid = (float)Background.height / (float)framesY;
+        float xGrid = (float)Background.GetTexture().width / (float)framesX;
+        float yGrid = (float)Background.GetTexture().height / (float)framesY;
 
         if (backgroundX >= 0 && backgroundY >= 0)
         {
@@ -285,19 +295,19 @@ namespace RLGameGUI
     {
         Color color = Tint;
         Color labelColor = TextColor;
-        Texture2D tx = Background;
+        TextureRecord* tx = &Background;
         Rectangle sourceRect = SourceRect;
 
-        Vector2 offset = V2Zero;
-        Vector2 scale = V2Zero;
+        Vector2 offset = Vector2Zeros;
+        Vector2 scale = Vector2Zeros;
 
         if (Disabled)
         {
             color = DisableTint;
             labelColor = DisableTextColor;
 
-            if (DisableTexture.id != 0)
-                tx = DisableTexture;
+            if (DisableTexture.Valid())
+                tx = &DisableTexture;
 
             if (DisableSourceRect.width > 0)
                 sourceRect = DisableSourceRect;
@@ -315,8 +325,8 @@ namespace RLGameGUI
                 if (PressTextColor.a > 0)
                     labelColor = PressTextColor;
 
-                if (PressTexture.id != 0)
-                    tx = PressTexture;
+                if (PressTexture.Valid())
+                    tx = &PressTexture;
 
                 if (PressSourceRect.width > 0)
                     sourceRect = PressSourceRect;
@@ -332,18 +342,18 @@ namespace RLGameGUI
                 if (HoverTextColor.a > 0)
                     labelColor = HoverTextColor;
 
-                if (HoverTexture.id != 0)
-                    tx = HoverTexture;
+                if (HoverTexture.Valid())
+                    tx = &HoverTexture;
 
                 if (HoverSourceRect.width > 0)
                     sourceRect = HoverSourceRect;
             }
         }
 
-        if (Background.id == 0)
+        if (!tx->Valid())
             Draw(color, Outline, offset, scale);
         else
-            Draw(tx, color, sourceRect, offset, scale);
+            Draw(tx->GetTexture(), color, sourceRect, offset, scale);
 
         if (!Text.empty())
         {
