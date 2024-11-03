@@ -14,9 +14,9 @@ namespace RLGameGUI
 {
     namespace GUIElementFactory
     {
-        std::unordered_map<std::string, std::function<std::unique_ptr<GUIElement>()>> Factories;
+        std::unordered_map<std::string, std::function<std::shared_ptr<GUIElement>()>> Factories;
 
-        void Register(const std::string& typeName, std::function<std::unique_ptr<GUIElement>()> callback)
+        void Register(const std::string& typeName, std::function<std::shared_ptr<GUIElement>()> callback)
         {
             Factories.insert_or_assign(typeName, callback);
         }
@@ -46,7 +46,7 @@ namespace RLGameGUI
         {
             for (auto& element : elementArray.GetArray())
             {
-                if (!element.IsObject())
+                if (element.IsObject())
                 {
                     auto name = element.GetObject().FindMember("typename");
                     if (!name->value.IsString())
@@ -70,7 +70,6 @@ namespace RLGameGUI
 
         std::shared_ptr<GUIScreen> ReadJson(const char* data)
         {
-
             std::shared_ptr<GUIScreen> screen = std::make_shared<GUIScreen>();
 
             Document document;
@@ -87,14 +86,65 @@ namespace RLGameGUI
             if (!rootType->value.IsString())
                 return screen;
 
-            auto elementArary = rootType->value.FindMember("elements");
-            if (elementArary->value.IsArray())
+            auto elementArary = rootItr->value.FindMember("elements");
+            if (!elementArary->value.IsArray())
                 return screen;
-
 
             ReadElements(screen.get(), elementArary->value, document);
 
             return screen;
+        }
+
+
+        bool ReadColor(const Value& object, const std::string& name, Color& color)
+        {
+            auto value = object.FindMember(name.c_str());
+            if (value->value.IsObject())
+            {
+                ReadMember(value->value, "r", color.r);
+                ReadMember(value->value, "g", color.g);
+                ReadMember(value->value, "b", color.b);
+                ReadMember(value->value, "a", color.a);
+                return true;
+            }
+            return false;
+        }
+
+        bool ReadRectangle(const rapidjson::Value& object, const std::string& name, Rectangle& rect)
+        {
+            auto value = object.FindMember(name.c_str());
+            if (value->value.IsObject())
+            {
+                ReadMember(value->value, "x", rect.x);
+                ReadMember(value->value, "y", rect.y);
+                ReadMember(value->value, "w", rect.width);
+                ReadMember(value->value, "h", rect.height);
+                return true;
+            }
+            return false;
+        }
+
+        bool ReadVector2(const rapidjson::Value& object, const std::string& name, Vector2& vector)
+        {
+            auto value = object.FindMember(name.c_str());
+            if (value != object.MemberEnd() && value->value.IsObject())
+            {
+                ReadMember(value->value, "x", vector.x);
+                ReadMember(value->value, "y", vector.y);
+                return true;
+            }
+            return false;
+        }
+
+        bool ReadAllignmentType(const rapidjson::Value& object, const std::string& name, AlignmentTypes& alligment)
+        {
+            auto allignItr = object.FindMember(name.c_str());
+            if (allignItr != object.MemberEnd() && allignItr->value.IsInt())
+            {
+                alligment = AlignmentTypes(allignItr->value.GetInt());
+                return true;
+            }
+            return false;
         }
     }
 
@@ -151,6 +201,55 @@ namespace RLGameGUI
 
             SaveFileText(file.c_str(), (char*)sb.GetString());
 
+            return true;
+        }
+
+        bool WriteColor(rapidjson::Value& object, const std::string& name, Color color, rapidjson::Document& document)
+        {
+            auto& allocator = document.GetAllocator();
+
+            Value colorObject(kObjectType);
+            colorObject.AddMember("r", color.r, allocator);
+            colorObject.AddMember("g", color.g, allocator);
+            colorObject.AddMember("b", color.b, allocator);
+            colorObject.AddMember("a", color.a, allocator);
+
+            object.AddMember(Value(name.c_str(), allocator), colorObject, allocator);
+            
+            return true;
+        }
+
+        bool WriteRectangle(rapidjson::Value& object, const std::string& name, Rectangle rectangle, rapidjson::Document& document)
+        {
+            auto& allocator = document.GetAllocator();
+
+            Value colorObject(kObjectType);
+            colorObject.AddMember("x", rectangle.x, allocator);
+            colorObject.AddMember("y", rectangle.y, allocator);
+            colorObject.AddMember("w", rectangle.width, allocator);
+            colorObject.AddMember("h", rectangle.height, allocator);
+
+            object.AddMember(Value(name.c_str(), allocator), colorObject, allocator);
+
+            return true;
+        }
+
+        bool WriteVector2(rapidjson::Value& object, const std::string& name, Vector2 vector, rapidjson::Document& document)
+        {
+            auto& allocator = document.GetAllocator();
+
+            Value colorObject(kObjectType);
+            colorObject.AddMember("x", vector.x, allocator);
+            colorObject.AddMember("y", vector.y, allocator);
+
+            object.AddMember(Value(name.c_str(), allocator), colorObject, allocator);
+
+            return true;
+        }
+
+        bool WriteAllignmentType(rapidjson::Value& object, const std::string& name, AlignmentTypes alligment, rapidjson::Document& documnet)
+        {
+            object.AddMember(Value(name.c_str(), documnet.GetAllocator()), int(alligment), documnet.GetAllocator());
             return true;
         }
     }

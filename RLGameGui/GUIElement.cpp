@@ -27,6 +27,7 @@
 **********************************************************************************************/
 
 #include "GUIElement.h"
+#include "GUIScreenIO.h"
 
 using namespace rapidjson;
 
@@ -154,27 +155,27 @@ namespace RLGameGUI
 	bool GUIElement::Read(const rapidjson::Value& object, rapidjson::Document& document)
 	{
 		auto name = object.FindMember("name");
-		if (name->value.IsString())
+		if (name != object.MemberEnd() && name->value.IsString())
 			Name = name->value.GetString();
         
 		auto id = object.FindMember("id");
-        if (id->value.IsString())
+        if (id != object.MemberEnd() && id->value.IsString())
             Id = id->value.GetString();
 
 		auto hidden = object.FindMember("hidden");
-		if (hidden->value.IsBool())
+		if (hidden != object.MemberEnd() && hidden->value.IsBool())
 			Hidden = hidden->value.GetBool();
 
         auto disabled = object.FindMember("disabled");
-        if (disabled->value.IsBool())
+        if (disabled != object.MemberEnd() && disabled->value.IsBool())
 			Disabled = disabled->value.GetBool();
 
         auto bounds = object.FindMember("relative_bounds");
-		if (bounds->value.IsObject())
+		if (bounds != object.MemberEnd() && bounds->value.IsObject())
 			RelativeBounds.Read(bounds->value, document);
 
         auto padding = object.FindMember("padding");
-        if (padding->value.IsObject())
+        if (padding != object.MemberEnd() && padding->value.IsObject())
             Padding.Read(padding->value, document);
 
 		return true;
@@ -198,6 +199,21 @@ namespace RLGameGUI
         object.AddMember("padding", padding, alloc);
 
 		return true;
+	}
+
+	GUIElement* GUIElement::FindElement(const std::string& id)
+	{
+		if (id == Id)
+			return this;
+
+		for (auto& child : Children)
+		{
+			auto* element = child->FindElement(id);
+			if (element)
+				return element;
+		}
+
+		return nullptr;
 	}
 
 	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)
@@ -232,15 +248,15 @@ namespace RLGameGUI
 	bool RelativeValue::Read(const rapidjson::Value& object, rapidjson::Document& document)
 	{
 		auto percent = object.FindMember("percent");
-		if (percent->value.IsBool())
+		if (percent != object.MemberEnd() && percent->value.IsBool())
 			SizeType = percent->value.GetBool() ? RelativeSizeTypes::Percent : RelativeSizeTypes::Pixel;
 
         auto horizontal = object.FindMember("horizontal");
-        if (horizontal->value.IsBool())
+        if (horizontal != object.MemberEnd() && horizontal->value.IsBool())
 			AxisType = horizontal->value.GetBool() ? AxisTypes::Horizontal : AxisTypes::Vertical;
 
         auto value = object.FindMember("value");
-        if (value->value.IsFloat())
+        if (value != object.MemberEnd() && value->value.IsFloat())
 			SizeValue = value->value.GetFloat() ;
 
 		return true;
@@ -272,11 +288,11 @@ namespace RLGameGUI
     bool RelativePoint::Read(const rapidjson::Value& object, rapidjson::Document& document)
     {
         auto x = object.FindMember("x");
-		if (x->value.IsObject())
+		if (x != object.MemberEnd() && x->value.IsObject())
 			X.Read(x->value, document);
 
         auto y = object.FindMember("y");
-        if (y->value.IsObject())
+        if (y != object.MemberEnd() && y->value.IsObject())
             Y.Read(y->value, document);
 
 		return true;
@@ -288,10 +304,11 @@ namespace RLGameGUI
 
 		Value x(Type::kObjectType);
 		X.Write(x, document);
+		object.AddMember("x", x, alloc);
 		
 		Value y(Type::kObjectType);
 		Y.Write(y, document);
-
+		object.AddMember("y", y, alloc);
 		return true;
     }
 
@@ -328,11 +345,22 @@ namespace RLGameGUI
     {
         auto& alloc = document.GetAllocator();
 
-        Value origin(Type::kObjectType);
-        Origin.Write(origin, document);
+        auto origin = object.FindMember("origin");
+		if (origin != object.MemberEnd() && origin->value.IsObject())
+		{
+			Origin.Read(origin->value, document);
+		}
 
-        Value size(Type::kObjectType);
-		Size.Write(size, document);
+        auto size = object.FindMember("size");
+		if (size != object.MemberEnd() && size->value.IsObject())
+		{
+			Size.Read(size->value, document);
+		}
+
+		GUIScreenReader::ReadVector2(object, "offset", Offset);
+
+		GUIScreenReader::ReadAllignmentType(object, "horizontal_allignment", HorizontalAlignment);
+        GUIScreenReader::ReadAllignmentType(object, "vertical_allignment", VerticalAlignment);
 
         return true;
     }
@@ -354,9 +382,9 @@ namespace RLGameGUI
 		offset.AddMember("x", Offset.x, alloc);
 		offset.AddMember("y", Offset.y, alloc);
 		object.AddMember("offset", offset, alloc);
-
-		object.AddMember("horizontal_allignment", int(HorizontalAlignment), alloc);
-		object.AddMember("vertical_allignment", int(VerticalAlignment), alloc);
+		
+		GUIScreenWriter::WriteAllignmentType(object, "horizontal_allignment", HorizontalAlignment, document);
+		GUIScreenWriter::WriteAllignmentType(object, "vertical_allignment", VerticalAlignment, document);
 		
 		return true;
 	}

@@ -31,6 +31,8 @@
 #include "raymath.h"
 #include "GUITextureManager.h"
 
+using namespace rapidjson;
+
 namespace RLGameGUI
 {
     Texture2D TextureRecord::GetTexture()
@@ -40,6 +42,15 @@ namespace RLGameGUI
 
         Texture = TextureManager::GetTexture(Name);
         return Texture;
+    }
+
+    Font FontRecord::GetFont()
+    {
+        if (IsFontValid(CachedFont))
+            return CachedFont;
+
+        CachedFont = FontManager::GetFont(Name, Size);
+        return CachedFont;
     }
 
     void GUIPanel::Draw(Color fill, Color outline, const Vector2& offset, const Vector2& scale)
@@ -119,6 +130,52 @@ namespace RLGameGUI
         }
     }
 
+    bool GUIPanel::Read(const Value& object, Document& document)
+    {
+        GUIElement::Read(object, document);
+
+        GUIScreenReader::ReadColor(object, "tint", Tint);
+        GUIScreenReader::ReadColor(object, "outline", Outline);
+
+        GUIScreenReader::ReadMember(object, "outline_thickness", OutlineThickness);
+
+        GUIScreenReader::ReadMember(object, "background", Background.Name);
+        GUIScreenReader::ReadRectangle(object, "source_rect", SourceRect);
+
+        int fill = 0;
+        if (GUIScreenReader::ReadMember(object, "fill_mode", fill) && fill <= int(PanelFillModes::NPatch))
+        {
+            Fillmode = PanelFillModes(fill);
+        }
+
+        GUIScreenReader::ReadVector2(object, "npatch_gutters", NPatchGutters);
+
+        return true;
+    }
+
+    bool GUIPanel::Write(Value& object, Document& document)
+    {
+        GUIElement::Write(object, document);
+
+        auto& alloc = document.GetAllocator();
+
+        GUIScreenWriter::WriteColor(object, "tint", Tint, document);
+        GUIScreenWriter::WriteColor(object, "outline", Outline, document);
+
+        object.AddMember("outline_thickness", OutlineThickness, alloc);
+
+        if (Background.Valid())
+            object.AddMember("background", Value(Background.Name.c_str(), alloc), alloc);
+        
+        GUIScreenWriter::WriteRectangle(object, "source_rect", SourceRect, document);
+
+        object.AddMember("fill_mode", int(Fillmode), alloc);
+
+        GUIScreenWriter::WriteVector2(object, "npatch_gutters", NPatchGutters, document);
+
+        return true;
+    }
+
 	void GUIPanel::OnRender()
 	{
         if (!Background.Valid())
@@ -176,19 +233,46 @@ namespace RLGameGUI
         }
     }
 
-    static Rectangle ResizeTextBox(float& textSize, const std::string& text, Font& textFont, float& spacing, Rectangle& screenRect, RLGameGUI::AlignmentTypes hAlign, RLGameGUI::AlignmentTypes vAlign)
+    bool GUIImage::Read(const Value& object, Document& document)
+    {
+        GUIElement::Read(object, document);
+
+        GUIScreenReader::ReadColor(object, "tint", Tint);
+        GUIScreenReader::ReadMember(object, "background", Background.Name);
+        GUIScreenReader::ReadRectangle(object, "source_rect", SourceRect);
+        GUIScreenReader::ReadMember(object, "background", Background.Name);
+        return true;
+    }
+
+    bool GUIImage::Write(Value& object, Document& document)
+    {
+        GUIElement::Write(object, document);
+
+        auto& alloc = document.GetAllocator();
+
+        GUIScreenWriter::WriteColor(object, "tint", Tint, document);
+       
+        if (Background.Valid())
+            object.AddMember("background", Value(Background.Name.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteRectangle(object, "source_rect", SourceRect, document);
+
+        return true;
+    }
+
+    static Rectangle ResizeTextBox(int& textSize, const std::string& text, Font& textFont, float& spacing, Rectangle& screenRect, RLGameGUI::AlignmentTypes hAlign, RLGameGUI::AlignmentTypes vAlign)
     {
         int defaultFontSize = 10;   // Default Font chars height in pixel
         if (textSize < defaultFontSize)
-            textSize = (float)defaultFontSize;
+            textSize = defaultFontSize;
 
-        spacing = textSize / defaultFontSize;
+        spacing = float(textSize) / defaultFontSize;
 
         Font fontToUse = textFont;
         if (textFont.texture.id == 0)
             fontToUse = GetFontDefault();
 
-        Vector2 size = MeasureTextEx(fontToUse, text.c_str(), textSize, spacing);
+        Vector2 size = MeasureTextEx(fontToUse, text.c_str(), float(textSize), spacing);
 
         Rectangle textRect = { 0,0,0,0 };
 
@@ -229,23 +313,55 @@ namespace RLGameGUI
 
     void GUILabel::OnResize()
     {
-        TextRect = ResizeTextBox(TextSize, Text, TextFont, Spacing, ScreenRect, HorizontalAlignment, VerticalAlignment); 
+        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), Spacing, ScreenRect, HorizontalAlignment, VerticalAlignment);
     }
 
-    void DrawTextRect(const Font& fontToUse, const std::string& text, const Rectangle& rect, float size, float spacing, Color tint)
+    void DrawTextRect(const Font& fontToUse, const std::string& text, const Rectangle& rect, int size, float spacing, Color tint)
     {
         BeginScissorMode(int(rect.x), int(rect.y), int(rect.width), int(rect.height));
-        DrawTextEx(fontToUse, text.c_str(), Vector2{ rect.x, rect.y }, size, spacing, tint);
+        DrawTextEx(fontToUse, text.c_str(), Vector2{ rect.x, rect.y }, float(size), spacing, tint);
         EndScissorMode();
     }
 
     void GUILabel::OnRender()
     {
-        Font fontToUse = TextFont;
-        if (TextFont.texture.id == 0)
-            fontToUse = GetFontDefault();
+        DrawTextRect(TextFont.GetFont(), Text.c_str(), TextRect, TextFont.Size, Spacing, Tint);
+    }
 
-        DrawTextRect(fontToUse, Text.c_str(), TextRect, TextSize, Spacing, Tint);
+    bool GUILabel::Read(const Value& object, Document& document)
+    {
+        GUIElement::Read(object, document);
+
+        GUIScreenReader::ReadColor(object, "tint", Tint);
+
+        GUIScreenReader::ReadMember(object, "text_font", TextFont.Name);
+        GUIScreenReader::ReadMember(object, "text_size", TextFont.Size);
+
+        GUIScreenReader::ReadMember(object, "text", Text);
+
+        GUIScreenReader::ReadAllignmentType(object, "horizontal_allignment", HorizontalAlignment);
+        GUIScreenReader::ReadAllignmentType(object, "vertical_allignment", VerticalAlignment);
+
+        return true;
+    }
+
+    bool GUILabel::Write(Value& object, Document& document)
+    {
+        GUIElement::Write(object, document);
+        auto& alloc = document.GetAllocator();
+
+        GUIScreenWriter::WriteColor(object, "tint", Tint, document);
+        if (!TextFont.Name.empty())
+            object.AddMember("text_font", Value(TextFont.Name.c_str(), alloc), alloc);
+
+        object.AddMember("text_size", TextFont.Size, alloc);
+
+        object.AddMember("text", Value(Text.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteAllignmentType(object, "horizontal_allignment", HorizontalAlignment, document);
+        GUIScreenWriter::WriteAllignmentType(object, "vertical_allignment", VerticalAlignment, document);
+
+        return true;
     }
 
     void GUIButton::SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX, int hoverY, int pressX, int pressY, int disableX, int disableY )
@@ -288,7 +404,7 @@ namespace RLGameGUI
 
     void GUIButton::OnResize()
     {
-        TextRect = ResizeTextBox(TextSize, Text, TextFont, Spacing, ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);
+        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), Spacing, ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);
     }
 
     void GUIButton::OnRender()
@@ -357,18 +473,87 @@ namespace RLGameGUI
 
         if (!Text.empty())
         {
-            Font fontToUse = TextFont;
-            if (TextFont.texture.id == 0)
-                fontToUse = GetFontDefault();
-
             Rectangle rect = TextRect;
             rect.x += offset.x;
             rect.y += offset.y;
 
-            DrawTextRect(fontToUse, Text.c_str(), rect, TextSize, Spacing, labelColor);
+            DrawTextRect(TextFont.GetFont(), Text.c_str(), rect, TextFont.Size, Spacing, labelColor);
         }
     }
 
+    bool GUIButton::Read(const Value& object, Document& document)
+    {
+        GUIPanel::Read(object, document);
+
+        GUIScreenReader::ReadMember(object, "text", Text);
+
+        GUIScreenReader::ReadColor(object, "text_color", TextColor);
+
+        GUIScreenReader::ReadMember(object, "text_font", TextFont.Name);
+        GUIScreenReader::ReadMember(object, "text_size", TextFont.Size);
+
+        GUIScreenReader::ReadColor(object, "hover_text_color", HoverTextColor);
+        GUIScreenReader::ReadColor(object, "hover_tint", HoverTint);
+        GUIScreenReader::ReadRectangle(object, "hover_source_rect", HoverSourceRect);
+        GUIScreenReader::ReadMember(object, "hover_texture", HoverTexture.Name);
+
+        GUIScreenReader::ReadColor(object, "press_text_color", PressTextColor);
+        GUIScreenReader::ReadColor(object, "press_tint", PressTint);
+        GUIScreenReader::ReadRectangle(object, "press_source_rect", PressSourceRect);
+        GUIScreenReader::ReadMember(object, "press_texture", PressTexture.Name);
+
+        GUIScreenReader::ReadColor(object, "disable_text_color", DisableTextColor);
+        GUIScreenReader::ReadColor(object, "disable_tint", DisableTint);
+        GUIScreenReader::ReadRectangle(object, "disable_source_rect", DisableSourceRect);
+        GUIScreenReader::ReadMember(object, "disable_texture", DisableTexture.Name);
+
+        GUIScreenReader::ReadVector2(object, "hover_offset", HoverOffset);
+        GUIScreenReader::ReadVector2(object, "hover_scale", HoverScale);
+        GUIScreenReader::ReadVector2(object, "press_offset", PressOffset);
+        GUIScreenReader::ReadVector2(object, "press_scale", PressScale);
+
+        return true;
+    }
+
+    bool GUIButton::Write(Value& object, Document& document)
+    {
+        GUIPanel::Write(object, document);
+
+        auto& alloc = document.GetAllocator();
+
+        object.AddMember("text", Value(Text.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteColor(object, "text_color", TextColor, document);
+
+        if (!TextFont.Name.empty())
+            object.AddMember("text_font", Value(TextFont.Name.c_str(), alloc), alloc);
+        object.AddMember("text_size", TextFont.Size, alloc);
+
+        GUIScreenWriter::WriteColor(object, "hover_text_color", HoverTextColor, document);
+        GUIScreenWriter::WriteColor(object, "hover_tint", HoverTint, document);
+        GUIScreenWriter::WriteRectangle(object, "hover_source_rect", HoverSourceRect, document);
+        if (HoverTexture.Valid())
+            object.AddMember("hover_texture", Value(HoverTexture.Name.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteColor(object, "press_text_color", PressTextColor, document);
+        GUIScreenWriter::WriteColor(object, "press_tint", PressTint, document);
+        GUIScreenWriter::WriteRectangle(object, "press_source_rect", PressSourceRect, document);
+        if (HoverTexture.Valid())
+            object.AddMember("press_texture", Value(PressTexture.Name.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteColor(object, "disable_text_color", DisableTextColor, document);
+        GUIScreenWriter::WriteColor(object, "disable_tint", DisableTint, document);
+        GUIScreenWriter::WriteRectangle(object, "disable_source_rect", DisableSourceRect, document);
+        if (HoverTexture.Valid())
+            object.AddMember("disable_texture", Value(DisableTexture.Name.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteVector2(object, "hover_offset", HoverOffset, document);
+        GUIScreenWriter::WriteVector2(object, "hover_scale", HoverScale, document);
+        GUIScreenWriter::WriteVector2(object, "press_offset", PressOffset, document);
+        GUIScreenWriter::WriteVector2(object, "press_scale", PressScale, document);
+
+        return true;
+    }
 
     std::vector<std::string>::const_iterator GUIComboBox::Begin()
     {
@@ -414,6 +599,56 @@ namespace RLGameGUI
             return nullptr;
 
         return &(Items[item]);
+    }
+
+    bool GUIComboBox::Read(const Value& object, Document& document)
+    {
+        GUIPanel::Read(object, document);
+
+        GUIScreenReader::ReadColor(object, "text_color", TextColor);
+
+        GUIScreenReader::ReadMember(object, "text_font", TextFont.Name);
+        GUIScreenReader::ReadMember(object, "text_size", TextFont.Size);
+
+        auto itemsItr = object.FindMember("item");
+
+        Items.clear();
+
+        if (itemsItr != object.MemberEnd() && itemsItr->value.IsArray())
+        {
+            for (auto& item : itemsItr->value.GetArray())
+            {
+                if (item.IsString())
+                {
+                    Items.push_back(item.GetString());
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool GUIComboBox::Write(Value& object, Document& document)
+    {
+        GUIPanel::Write(object, document);
+
+        auto& alloc = document.GetAllocator();
+
+        GUIScreenWriter::WriteColor(object, "text_color", TextColor, document);
+        if (!TextFont.Name.empty())
+            object.AddMember("text_font", Value(TextFont.Name.c_str(), alloc), alloc);
+        object.AddMember("text_size", TextFont.Size, alloc);
+
+        Value valueList(kArrayType);
+
+        for (auto& item : Items)
+        {
+            valueList.PushBack(Value(item.c_str(), alloc), alloc);
+        }
+
+        object.AddMember("items", valueList, alloc);
+
+        return true;
     }
 }
 

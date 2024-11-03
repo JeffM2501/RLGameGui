@@ -32,6 +32,10 @@
 #include <functional>
 #include <memory>
 
+#include "GUIElement.h"
+#include "rapidjson/document.h"
+#include "raylib.h"
+
 namespace RLGameGUI
 {
     class GUIElement;
@@ -47,10 +51,58 @@ namespace RLGameGUI
     {
         std::shared_ptr<GUIScreen> Read(const std::string& file);
         std::shared_ptr<GUIScreen> ReadJson(const char* data);
+
+        bool ReadColor(const rapidjson::Value& object, const std::string& name, Color& color);
+        bool ReadRectangle(const rapidjson::Value& object, const std::string& name, Rectangle& rect);
+        bool ReadVector2(const rapidjson::Value& object, const std::string& name, Vector2& vector);
+
+        bool ReadAllignmentType(const rapidjson::Value& object, const std::string& name, AlignmentTypes& alligment);
+
+        template<class T>
+        inline bool ReadMember(const rapidjson::Value& object, const std::string& name, T& value)
+        {
+            auto valueObjet = object.FindMember(name.c_str());
+            if (valueObjet != object.MemberEnd() && valueObjet->value.Is<T>())
+            {
+                value = valueObjet->value.Get<T>();
+                return true;
+            }
+            return false;
+        }
+
+        template<>
+        inline bool ReadMember(const rapidjson::Value& object, const std::string& name, unsigned char& value)
+        {
+            auto valueObjet = object.FindMember(name.c_str());
+            if (valueObjet != object.MemberEnd() && valueObjet->value.IsInt())
+            {
+                value = unsigned char(valueObjet->value.GetInt());
+                return true;
+            }
+            return false;
+        }
+
+        template<>
+        inline bool ReadMember(const rapidjson::Value& object, const std::string& name, std::string& value)
+        {
+            auto valueObjet = object.FindMember(name.c_str());
+            if (valueObjet != object.MemberEnd() && valueObjet->value.IsString())
+            {
+                value = valueObjet->value.GetString();
+                return true;
+            }
+            return false;
+        }
     }
 
     namespace GUIScreenWriter
     {
         bool Write(const std::string& file, GUIScreen* screen);
+
+        bool WriteColor(rapidjson::Value& object, const std::string& name, Color color, rapidjson::Document& document);
+        bool WriteRectangle(rapidjson::Value& object, const std::string& name, Rectangle rect, rapidjson::Document& document);
+        bool WriteVector2(rapidjson::Value& object, const std::string& name, Vector2 vector, rapidjson::Document& document);
+
+        bool WriteAllignmentType(rapidjson::Value& object, const std::string& name, AlignmentTypes alligment, rapidjson::Document& documnet);
     }
 }

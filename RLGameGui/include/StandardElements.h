@@ -31,6 +31,7 @@
 #include "GUIElement.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "GUIScreenIO.h"
 
 namespace RLGameGUI
 {
@@ -44,6 +45,17 @@ namespace RLGameGUI
         Texture2D Texture = { 0 };
     };
 
+    struct FontRecord
+    {
+        std::string Name;
+        int Size = 20;
+
+        Font GetFont();
+
+    private:
+        Font CachedFont = { 0 };
+    };
+
     class GUIFrame : public GUIElement
     {
     public:
@@ -54,9 +66,9 @@ namespace RLGameGUI
 
     enum class PanelFillModes
     {
-        Fill,
-        Tile,
-        NPatch,
+        Fill = 0,
+        Tile = 1,
+        NPatch = 2,
     };
 
 	class GUIPanel : public GUIElement
@@ -83,6 +95,9 @@ namespace RLGameGUI
         inline static Ptr Create() { return std::make_shared<GUIPanel>(); }
         inline static Ptr Create(Color tint) { return std::make_shared<GUIPanel>(tint); }
         inline static Ptr Create(const std::string& img) { return std::make_shared<GUIPanel>(img); }
+
+        bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
+        bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
 
 	protected:
       	void OnRender() override;
@@ -111,6 +126,9 @@ namespace RLGameGUI
         inline static Ptr Create() { return std::make_shared<GUIImage>(); }
         inline static Ptr Create(const std::string& img) { return std::make_shared<GUIImage>(img); }
 
+        bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
+        bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
+
     protected:
         void OnUpdate() override;
         void OnRender() override;
@@ -127,23 +145,31 @@ namespace RLGameGUI
         DEFINE_ELEMENT(GUILabel)
 
         Color Tint = BLACK;
-        Font TextFont = GetFontDefault();
-        float TextSize = 20;
+
+        FontRecord TextFont;
 
         GUILabel() {}
         GUILabel(const std::string& text) : Text(text) {}
-        GUILabel(const std::string& text, const Font& font, int size = 16) : Text(text), TextFont(font), TextSize((float)size) {}
+        GUILabel(const std::string& text, const std::string& font, int size = 20) 
+        : Text(text)
+        {
+            TextFont.Name = font;
+            TextFont.Size = size;
+        }
 
         typedef std::shared_ptr<GUILabel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUILabel>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
-        inline static Ptr Create(const std::string& text, const Font& font, int size = 16) { return std::make_shared<GUILabel>(text, font, size); }
+        inline static Ptr Create(const std::string& text, const std::string& font, int size = 20) { return std::make_shared<GUILabel>(text, font, size); }
 
         AlignmentTypes HorizontalAlignment = AlignmentTypes::Minimum;
         AlignmentTypes VerticalAlignment = AlignmentTypes::Minimum;
 
         inline virtual void SetText(const std::string& text) { Text = text; RelativeBounds.SetDirty(); }
         inline const std::string& GetText() { return Text; }
+
+        bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
+        bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
 
     protected:
         void OnRender() override;
@@ -161,8 +187,7 @@ namespace RLGameGUI
         DEFINE_ELEMENT(GUIButton)
 
         Color TextColor = BLACK;
-        Font TextFont = GetFontDefault();
-        float TextSize = 20;
+        FontRecord TextFont;
 
         Color HoverTint = BLANK;
         Rectangle HoverSourceRect = { 0,0,0,0 };
@@ -197,6 +222,9 @@ namespace RLGameGUI
 
         virtual void SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX = -1, int hoverY = -1, int pressX = -1, int pressY = -1, int disableX = -1, int disableY = -1);
 
+        bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
+        bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
+
     protected:
         void OnResize() override;
         void OnRender() override;
@@ -213,8 +241,7 @@ namespace RLGameGUI
         DEFINE_ELEMENT(GUIComboBox)
 
         Color TextColor = BLACK;
-        Font TextFont = GetFontDefault();
-        float TextSize = 20;
+        FontRecord TextFont;
 
         GUIComboBox() {}
         GUIComboBox(const std::string& texture) { Background.Name = texture; }
@@ -233,6 +260,9 @@ namespace RLGameGUI
         void SetSelectedItemIndex(int item);
 
         const std::string* GetItem(int item);
+
+        bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
+        bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
 
     protected:
         std::vector<std::string> Items;

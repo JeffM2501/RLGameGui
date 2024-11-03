@@ -36,7 +36,6 @@
 
 #include "raylib.h"
 #include "rapidjson/document.h"
-#include "GUIScreenIO.h"
 
 namespace RLGameGUI
 {
@@ -202,7 +201,24 @@ namespace RLGameGUI
 
 		virtual bool Read(const rapidjson::Value& object, rapidjson::Document& document);
 		virtual bool Write(rapidjson::Value& object, rapidjson::Document& document);
+		
+		GUIElement* FindElement(const std::string& id);
 
+		template<class T>
+		T* FindElement(const std::string& id)
+		{
+			if (id == Id && T::TypeName() == GetTypeName())
+				return (T*)this;
+
+            for (auto& child : Children)
+            {
+                T* element = child->FindElement<T>(id);
+                if (element)
+                    return element;
+            }
+
+            return nullptr;
+		}
 	protected:
 
 		bool Renders = true;
