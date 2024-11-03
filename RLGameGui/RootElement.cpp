@@ -31,7 +31,7 @@
 
 namespace RLGameGUI
 {
-    Rectangle& RootElement::GetScreenRect()
+    const Rectangle& RootElement::GetScreenRect()
     {
         if (ScreenRect.width <= 0 || ScreenRect.height <= 0)
             OnResize();

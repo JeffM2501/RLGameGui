@@ -130,7 +130,7 @@ namespace RLGameGUI
 			child->Render();
 	}
 
-	Rectangle& GUIElement::GetScreenRect()
+	const Rectangle& GUIElement::GetScreenRect()
 	{
         if (RelativeBounds.IsDirty())
             Resize();
@@ -138,7 +138,7 @@ namespace RLGameGUI
 		return ScreenRect;
 	}
 
-	Rectangle& GUIElement::GetContentRect()
+	const Rectangle& GUIElement::GetContentRect()
 	{
         if (RelativeBounds.IsDirty())
             Resize();

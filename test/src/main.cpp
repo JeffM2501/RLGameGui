@@ -45,8 +45,9 @@ void RegisterElements()
 
 int main( int argc, char** argv)
 {
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
 	InitWindow(1000, 600, "GUI Test");
+	SetTargetFPS(300);
 
 	TextureManager::SetResourceDir("resources");
 	RegisterElements();
@@ -127,16 +128,12 @@ int main( int argc, char** argv)
   	button->PressTexture.Name = imageButtonPressed;
   	rootScreen->AddElement(button);
 
-	GUIScreenWriter::Write("test.json", rootScreen.get());
-
-	auto rootScreen2 = GUIScreenReader::Read("test.json");
-
-	GUILabel* dynamicButton = rootScreen2->FindElement<GUILabel>("DynamicLabel");
+	GUILabel* dynamicButton = rootScreen->FindElement<GUILabel>("DynamicLabel");
 
 	// register a click event handler
-	rootScreen2->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&dynamicButton](GUIElement&, GUIElementEvent, void*) {if (dynamicButton) dynamicButton->SetText("Clicked"); });
+	rootScreen->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&dynamicButton](GUIElement&, GUIElementEvent, void*) {if (dynamicButton) dynamicButton->SetText("Clicked"); });
 
-	Manager::PushScreen(rootScreen2);
+	Manager::PushScreen(rootScreen);
 
 	while (!WindowShouldClose())
 	{
@@ -148,11 +145,9 @@ int main( int argc, char** argv)
 		float scale = 4;
 		float offset = (float)GetTime() * 200;
 		DrawTexturePro(background, Rectangle{ offset, offset,GetScreenWidth() * scale,GetScreenHeight() * scale }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, Color{ 255,255,255,64 });
-		//  DrawTextureTiled(background, Rectangle{ 0,0,(float)background.width,(float)background.height }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, 0, WHITE);
-
-	  //	DrawLine(GetScreenWidth()/2, 0, GetScreenWidth()/2, GetScreenHeight(), RED);
-
 		Manager::Render();
+
+		DrawFPS(panel3->GetScreenRect().x, panel3->GetScreenRect().y - 20);
 		EndDrawing();
 	}
 	UnloadTexture(background);

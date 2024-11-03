@@ -37,9 +37,10 @@ namespace RLGameGUI
     public:
         RootElement() {Name = "RootElement"; }
 
+        const Rectangle& GetScreenRect() override;
+        const Rectangle& GetContentRect() override { return GetScreenRect(); }
+
     protected:
-        Rectangle& GetScreenRect() override;
-        Rectangle& GetContentRect() override { return GetScreenRect(); }
 
         void OnResize() override;
     };

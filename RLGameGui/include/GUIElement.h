@@ -219,6 +219,10 @@ namespace RLGameGUI
 
             return nullptr;
 		}
+
+        virtual const Rectangle& GetScreenRect();
+        virtual const Rectangle& GetContentRect();
+
 	protected:
 
 		bool Renders = true;
@@ -238,9 +242,6 @@ namespace RLGameGUI
 		virtual void OnClickStart() {}
 		virtual void OnClickEnd() {}
 		virtual void OnClickCancel() {}
-
-		virtual Rectangle& GetScreenRect();
-		virtual Rectangle& GetContentRect();
 
 		virtual void PostEvent(GUIElement* element, GUIElementEvent eventType, void* data);
 
