@@ -56,6 +56,7 @@ namespace RLGameGUI
 		typedef std::shared_ptr<GUIScreen> Ptr;
 		inline static Ptr Create() { return std::make_shared<GUIScreen>(); }
 
+		GUIElement::Ptr AddChild(GUIElement::Ptr element) override { return AddElement(element); }
 		GUIElement::Ptr AddElement(GUIElement::Ptr element);
 
 		typedef std::function<void()> ScreenEventCallback;
@@ -66,7 +67,6 @@ namespace RLGameGUI
 
 	protected:
 		bool Active = false;
-        std::vector<GUIElement::Ptr> Elements;
 
 		void DoResize();
 

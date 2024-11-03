@@ -29,27 +29,41 @@
 #include "raylib.h"
 #include "RLGameGui.h"
 #include "StandardElements.h"
+#include "GUITextureManager.h"
+
+#include "GUIScreenIO.h"
 
 using namespace RLGameGUI;
+
+void RegisterElements()
+{
+	GUIPanel::Register();
+	GUILabel::Register();
+	GUIImage::Register();
+	GUIButton::Register();
+}
 
 int main( int argc, char** argv)
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(1000, 600, "GUI Test");
 
-	Texture2D background = LoadTexture("resources/hex.png");
+	TextureManager::SetResourceDir("resources");
+	RegisterElements();
+
+	Texture background = TextureManager::GetTexture("hex.png");
 	Color backgroundColor = GetColor(0x1F252D);
 
-	Texture2D logo = LoadTexture("resources/raylib_logo.png");
-	Texture2D panelBG = LoadTexture("resources/KeyValueBackground.png");
+	std::string logo = ("raylib_logo.png");
+	std::string panelBG = ("KeyValueBackground.png");
 
-	Texture2D imageButton = LoadTexture("resources/ButtonBackground.png");
-	Texture2D imageButtonHover = LoadTexture("resources/ButtonBackground.hover.png");
-	Texture2D imageButtonDisabled = LoadTexture("resources/ButtonBackground.disabled.png");
-	Texture2D imageButtonPressed = LoadTexture("resources/ButtonBackground.active.png");
+	std::string imageButton = ("ButtonBackground.png");
+	std::string imageButtonHover = ("ButtonBackground.hover.png");
+	std::string imageButtonDisabled = ("ButtonBackground.disabled.png");
+	std::string imageButtonPressed = ("ButtonBackground.active.png");
 	
 	int fontSize = 26;
-	Font textFont = LoadFontEx("resources/fonts/BebasNeue Book.otf", fontSize, NULL, 0);
+	std::string textFont = "fonts/BebasNeue Book.otf";
 
 	Color textColor = RAYWHITE;
 
@@ -58,66 +72,71 @@ int main( int argc, char** argv)
 	GUIPanel::Ptr panel = GUIPanel::Create();
 	panel->Name = "panel1";
 	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-	panel->Background = panelBG;
+	panel->Background.Name = panelBG;
 	panel->Padding = RelativePoint(16, 16);
 	panel->Fillmode = PanelFillModes::NPatch;
 	panel->NPatchGutters = Vector2{ 16, 16 };
 
 	panel->Tint = WHITE;
 	rootScreen->AddElement(panel);
-
+	
 	GUIPanel::Ptr panel2 = GUIPanel::Create();
 	panel2->Name = "Panel2";
 	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
 	panel2->Tint = GRAY;
 	panel2->Outline = BLACK;
 	panel2->OutlineThickness = 4;
-
+	
 	panel->AddChild(panel2);
-
+	
 	GUILabel::Ptr label = GUILabel::Create("I am IRON MAN",textFont,fontSize);
 	label->RelativeBounds = RelativeRect{ 0, 10, 500, 40 };
 	label->Tint = textColor;
 	rootScreen->AddElement(label);
+  
+  	GUILabel::Ptr label2 = GUILabel::Create("Centered", textFont, fontSize);
+  	label2->Tint = textColor;
+  	label2->RelativeBounds = RelativeRect{ 0, 20, 500, 40 };
+  	label2->HorizontalAlignment = AlignmentTypes::Center;
+  	rootScreen->AddElement(label2);
+  
+  	GUILabel::Ptr label3 = GUILabel::Create("Right", textFont, fontSize);
+  	label3->Tint = textColor;
+	label3->Id = "DynamicLabel";
+  	label3->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
+  	label3->HorizontalAlignment = AlignmentTypes::Maximum;
+  	rootScreen->AddElement(label3);
+  
+  	GUIImage::Ptr panel3 = GUIImage::Create();
+  	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+  	panel3->Tint = WHITE;
+  	panel3->Background.Name = logo;
+  	rootScreen->AddElement(panel3);
+  
+  	GUIButton::Ptr button = GUIButton::Create(std::string(), imageButton);
+  	button->Id = "Clickable Button";
+  	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
+  	button->TextColor = WHITE;
+  	button->TextFont.Name = textFont;
+  	button->TextFont.Size = fontSize;
+  	button->SetText("Button");
+  	button->Fillmode = PanelFillModes::NPatch;
+  	button->NPatchGutters = Vector2{ 16, 16 };
+  	button->HoverTexture.Name = imageButtonHover;
+  	button->DisableTexture.Name = imageButtonDisabled;
+  	button->PressTexture.Name = imageButtonPressed;
+  	rootScreen->AddElement(button);
 
-	GUILabel::Ptr label2 = GUILabel::Create("Centered", textFont, fontSize);
-	label2->Tint = textColor;
-	label2->RelativeBounds = RelativeRect{ 0, 20, 500, 40 };
-	label2->HorizontalAlignment = AlignmentTypes::Center;
-	rootScreen->AddElement(label2);
+	GUIScreenWriter::Write("test.json", rootScreen.get());
 
-	GUILabel::Ptr label3 = GUILabel::Create("Right", textFont, fontSize);
-	label3->Tint = textColor;
-	label3->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
-	label3->HorizontalAlignment = AlignmentTypes::Maximum;
-	rootScreen->AddElement(label3);
+	auto rootScreen2 = GUIScreenReader::Read("test.json");
 
-	GUIImage::Ptr panel3 = GUIImage::Create();
-	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-	panel3->Tint = WHITE;
-	panel3->Background = logo;
-	rootScreen->AddElement(panel3);
-
-	GUIButton::Ptr button = GUIButton::Create(imageButton);
-	button->Id = "Clickable Button";
-	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
-	button->TextColor = WHITE;
-	button->TextFont = textFont;
-	button->TextSize = (float)fontSize;
-	button->SetText("Button");
-	button->Fillmode = PanelFillModes::NPatch;
-	button->NPatchGutters = Vector2{ 16, 16 };
-	button->HoverTexture = imageButtonHover;
-	button->DisableTexture = imageButtonDisabled;
-	button->PressTexture = imageButtonPressed;
-
+	GUILabel* dynamicButton = rootScreen2->FindElement<GUILabel>("DynamicLabel");
 
 	// register a click event handler
-	rootScreen->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&label3](GUIElement&, GUIElementEvent, void*) {label3->SetText("Clicked"); });
+	rootScreen2->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&dynamicButton](GUIElement&, GUIElementEvent, void*) {if (dynamicButton) dynamicButton->SetText("Clicked"); });
 
-	rootScreen->AddElement(button);
-
-	Manager::PushScreen(rootScreen);
+	Manager::PushScreen(rootScreen2);
 
 	while (!WindowShouldClose())
 	{
@@ -136,7 +155,10 @@ int main( int argc, char** argv)
 		Manager::Render();
 		EndDrawing();
 	}
-	UnloadTexture(logo);
+	UnloadTexture(background);
+
+	TextureManager::UnloadAll();
+	FontManager::UnloadAll();
 	CloseWindow();
 	return 0;
 }

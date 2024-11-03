@@ -27,6 +27,9 @@
 **********************************************************************************************/
 
 #include "GUIElement.h"
+#include "GUIScreenIO.h"
+
+using namespace rapidjson;
 
 namespace RLGameGUI
 {
@@ -149,6 +152,70 @@ namespace RLGameGUI
 			Parent->PostEvent(element, eventType, data);
 	}
 
+	bool GUIElement::Read(const rapidjson::Value& object, rapidjson::Document& document)
+	{
+		auto name = object.FindMember("name");
+		if (name != object.MemberEnd() && name->value.IsString())
+			Name = name->value.GetString();
+        
+		auto id = object.FindMember("id");
+        if (id != object.MemberEnd() && id->value.IsString())
+            Id = id->value.GetString();
+
+		auto hidden = object.FindMember("hidden");
+		if (hidden != object.MemberEnd() && hidden->value.IsBool())
+			Hidden = hidden->value.GetBool();
+
+        auto disabled = object.FindMember("disabled");
+        if (disabled != object.MemberEnd() && disabled->value.IsBool())
+			Disabled = disabled->value.GetBool();
+
+        auto bounds = object.FindMember("relative_bounds");
+		if (bounds != object.MemberEnd() && bounds->value.IsObject())
+			RelativeBounds.Read(bounds->value, document);
+
+        auto padding = object.FindMember("padding");
+        if (padding != object.MemberEnd() && padding->value.IsObject())
+            Padding.Read(padding->value, document);
+
+		return true;
+	}
+
+    bool GUIElement::Write(rapidjson::Value& object, rapidjson::Document& document)
+	{
+		auto& alloc = document.GetAllocator();
+
+		object.AddMember("name", Value(Name.c_str(), alloc), alloc);
+		object.AddMember("id", Value(Id.c_str(), alloc), alloc);
+		object.AddMember("hidden", Hidden, alloc);
+		object.AddMember("disabled", Disabled, alloc);
+
+		Value bounds(kObjectType);
+		RelativeBounds.Write(bounds, document);
+        object.AddMember("relative_bounds", bounds, alloc);
+
+		Value padding(kObjectType);
+		Padding.Write(padding, document);
+        object.AddMember("padding", padding, alloc);
+
+		return true;
+	}
+
+	GUIElement* GUIElement::FindElement(const std::string& id)
+	{
+		if (id == Id)
+			return this;
+
+		for (auto& child : Children)
+		{
+			auto* element = child->FindElement(id);
+			if (element)
+				return element;
+		}
+
+		return nullptr;
+	}
+
 	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)
 	{
 		Clean();
@@ -178,6 +245,34 @@ namespace RLGameGUI
         return pixelValue;
     }
 
+	bool RelativeValue::Read(const rapidjson::Value& object, rapidjson::Document& document)
+	{
+		auto percent = object.FindMember("percent");
+		if (percent != object.MemberEnd() && percent->value.IsBool())
+			SizeType = percent->value.GetBool() ? RelativeSizeTypes::Percent : RelativeSizeTypes::Pixel;
+
+        auto horizontal = object.FindMember("horizontal");
+        if (horizontal != object.MemberEnd() && horizontal->value.IsBool())
+			AxisType = horizontal->value.GetBool() ? AxisTypes::Horizontal : AxisTypes::Vertical;
+
+        auto value = object.FindMember("value");
+        if (value != object.MemberEnd() && value->value.IsFloat())
+			SizeValue = value->value.GetFloat() ;
+
+		return true;
+	}
+
+	bool RelativeValue::Write(rapidjson::Value& object, rapidjson::Document& document)
+	{
+        auto& alloc = document.GetAllocator();
+
+		object.AddMember("percent", SizeType == RelativeSizeTypes::Percent, alloc);
+		object.AddMember("horizontal", AxisType == AxisTypes::Horizontal, alloc);
+		object.AddMember("value", SizeValue, alloc);
+
+		return true;
+	}
+
 	Vector2 RelativePoint::ResolvePos(const Rectangle& parent)
 	{
 		Clean();
@@ -189,6 +284,33 @@ namespace RLGameGUI
 		Clean();
 		return Vector2{ X.ResolveSize(parent), Y.ResolveSize(parent) };
 	}
+
+    bool RelativePoint::Read(const rapidjson::Value& object, rapidjson::Document& document)
+    {
+        auto x = object.FindMember("x");
+		if (x != object.MemberEnd() && x->value.IsObject())
+			X.Read(x->value, document);
+
+        auto y = object.FindMember("y");
+        if (y != object.MemberEnd() && y->value.IsObject())
+            Y.Read(y->value, document);
+
+		return true;
+    }
+
+    bool RelativePoint::Write(rapidjson::Value& object, rapidjson::Document& document)
+    {
+        auto& alloc = document.GetAllocator();
+
+		Value x(Type::kObjectType);
+		X.Write(x, document);
+		object.AddMember("x", x, alloc);
+		
+		Value y(Type::kObjectType);
+		Y.Write(y, document);
+		object.AddMember("y", y, alloc);
+		return true;
+    }
 
 	float GetAllginedValue(float value, AlignmentTypes Alignment, float size, float offset)
 	{
@@ -218,4 +340,52 @@ namespace RLGameGUI
 
 		return Rectangle{ pixelOrigin.x, pixelOrigin.y, pixelSize.x, pixelSize.y };
     }
+
+    bool RelativeRect::Read(const rapidjson::Value& object, rapidjson::Document& document)
+    {
+        auto& alloc = document.GetAllocator();
+
+        auto origin = object.FindMember("origin");
+		if (origin != object.MemberEnd() && origin->value.IsObject())
+		{
+			Origin.Read(origin->value, document);
+		}
+
+        auto size = object.FindMember("size");
+		if (size != object.MemberEnd() && size->value.IsObject())
+		{
+			Size.Read(size->value, document);
+		}
+
+		GUIScreenReader::ReadVector2(object, "offset", Offset);
+
+		GUIScreenReader::ReadAllignmentType(object, "horizontal_allignment", HorizontalAlignment);
+        GUIScreenReader::ReadAllignmentType(object, "vertical_allignment", VerticalAlignment);
+
+        return true;
+    }
+
+    bool RelativeRect::Write(rapidjson::Value& object, rapidjson::Document& document)
+    {
+        auto& alloc = document.GetAllocator();
+
+        Value origin(Type::kObjectType);
+        Origin.Write(origin, document);
+
+        Value size(Type::kObjectType);
+        Size.Write(size, document);
+
+        object.AddMember("origin", origin, alloc);
+        object.AddMember("size", size, alloc);
+
+		Value offset(Type::kObjectType);
+		offset.AddMember("x", Offset.x, alloc);
+		offset.AddMember("y", Offset.y, alloc);
+		object.AddMember("offset", offset, alloc);
+		
+		GUIScreenWriter::WriteAllignmentType(object, "horizontal_allignment", HorizontalAlignment, document);
+		GUIScreenWriter::WriteAllignmentType(object, "vertical_allignment", VerticalAlignment, document);
+		
+		return true;
+	}
 }

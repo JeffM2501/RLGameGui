@@ -33,7 +33,9 @@
 #include <memory>
 #include <functional>
 
+
 #include "raylib.h"
+#include "rapidjson/document.h"
 
 namespace RLGameGUI
 {
@@ -51,9 +53,9 @@ namespace RLGameGUI
 
 	enum class AlignmentTypes
 	{
-		Minimum,
-		Maximum,
-		Center
+		Minimum = 0,
+		Maximum = 1,
+		Center = 2
 	};
 
 	class RelativeValue
@@ -87,6 +89,9 @@ namespace RLGameGUI
 		inline void Clean() { Dirty = false; }
 		inline void SetDirty() { Dirty = true; }
 
+        virtual bool Read(const rapidjson::Value& object, rapidjson::Document& document);
+        virtual bool Write(rapidjson::Value& object, rapidjson::Document& document);
+
 	protected:
 		bool Dirty = false;
 	};
@@ -110,6 +115,9 @@ namespace RLGameGUI
 
         Vector2 ResolvePos(const Rectangle& parrentScreenRect);
 		Vector2 ResolveSize(const Rectangle& parrentScreenRect);
+	
+        virtual bool Read(const rapidjson::Value& object, rapidjson::Document& document);
+        virtual bool Write(rapidjson::Value& object, rapidjson::Document& document);
 	};
 
 	class RelativeRect
@@ -135,6 +143,9 @@ namespace RLGameGUI
         inline void SetDirty() { Origin.SetDirty(); Size.SetDirty(); }
 
 		Rectangle Resolve(const Rectangle& parrentScreenRect);
+
+        virtual bool Read(const rapidjson::Value& object, rapidjson::Document& document);
+        virtual bool Write(rapidjson::Value& object, rapidjson::Document& document);
 	};
 
 	enum class GUIElementEvent
@@ -145,24 +156,39 @@ namespace RLGameGUI
 		Changed,
 	};
 
+#define DEFINE_ELEMENT(T) \
+	static inline const char* TypeName() {return #T;} \
+	inline const char* GetTypeName() const override { return #T; } \
+	static inline void Register()  \
+	{ \
+		GUIElementFactory::Register(#T, []() \
+			{\
+				return std::make_shared<T>(); \
+			});\
+	}
+
 	class GUIElement
 	{
 	public:
+		virtual ~GUIElement() = default;
+
 		std::string Name;
 
 		std::string Id;
+
+		virtual const char* GetTypeName() const { return nullptr; }
 
 		void Update(Vector2 mousePosition);
 		void Render();
 		void Resize();
 
 		typedef std::shared_ptr<GUIElement> Ptr;
-        typedef std::function<void(GUIElement*)> Function;
+		typedef std::function<void(GUIElement*)> Function;
 
 		GUIElement* Parent = nullptr;
 		std::vector<GUIElement::Ptr> Children;
 
-		GUIElement::Ptr AddChild(GUIElement::Ptr child);
+		virtual GUIElement::Ptr AddChild(GUIElement::Ptr child);
 
 		RelativeRect RelativeBounds;
 
@@ -173,6 +199,26 @@ namespace RLGameGUI
 
 		Function ElementClicked = nullptr;
 
+		virtual bool Read(const rapidjson::Value& object, rapidjson::Document& document);
+		virtual bool Write(rapidjson::Value& object, rapidjson::Document& document);
+		
+		GUIElement* FindElement(const std::string& id);
+
+		template<class T>
+		T* FindElement(const std::string& id)
+		{
+			if (id == Id && T::TypeName() == GetTypeName())
+				return (T*)this;
+
+            for (auto& child : Children)
+            {
+                T* element = child->FindElement<T>(id);
+                if (element)
+                    return element;
+            }
+
+            return nullptr;
+		}
 	protected:
 
 		bool Renders = true;

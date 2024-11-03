@@ -41,9 +41,5 @@ namespace RLGameGUI
 		void PushScreen(GUIScreen::Ptr screen);
 		GUIScreen::Ptr PopScreen();
 		GUIScreen::Ptr TopScreen();
-
-		using TextCallback = std::function<void(std::string& text)>;
-
-		// void SetTextFocus(TextCallback callback);
 	}
 }

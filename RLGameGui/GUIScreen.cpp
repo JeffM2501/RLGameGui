@@ -52,7 +52,7 @@ namespace RLGameGUI
 	void GUIScreen::DoResize()
     {
         Resize();
-        for (auto child : Elements)
+        for (auto child : Children)
             child->Resize();
 	}
 
@@ -67,14 +67,14 @@ namespace RLGameGUI
 		Vector2 mouse = GetMousePosition();
 
 		// let everyone think
-		for (auto child : Elements)
+		for (auto child : Children)
 			child->Update(mouse);
 	}
 
 	void GUIScreen::Render()
 	{
 		OnRender();
-        for (auto child : Elements)
+        for (auto child : Children)
             child->Render();
 
 		for (auto& callback : PostRenderCallbacks)
@@ -84,7 +84,7 @@ namespace RLGameGUI
     GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)
     {
 		element->Parent = this;
-		Elements.emplace_back(element);
+		Children.emplace_back(element);
 		OnElementAdd(element);
 
 		return element;
