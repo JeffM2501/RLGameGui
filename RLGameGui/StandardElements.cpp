@@ -115,7 +115,12 @@ namespace RLGameGUI
             if (NPatchData.source.width == 0)
             {
                 NPatchData.left = NPatchData.right = (int)NPatchGutters.x;
+                if (NPatchGutters.width >= 0)
+                    NPatchData.right = int(NPatchGutters.width);
+
                 NPatchData.top = NPatchData.bottom = (int)NPatchGutters.y;
+                if (NPatchGutters.height >= 0)
+                    NPatchData.bottom = int(NPatchGutters.height);
 
                 if (NPatchGutters.x == 0)
                     NPatchData.layout = NPATCH_THREE_PATCH_HORIZONTAL;
@@ -148,7 +153,7 @@ namespace RLGameGUI
             Fillmode = PanelFillModes(fill);
         }
 
-        GUIScreenReader::ReadVector2(object, "npatch_gutters", NPatchGutters);
+        GUIScreenReader::ReadRectangle(object, "npatch_gutters", NPatchGutters);
 
         return true;
     }
@@ -171,7 +176,7 @@ namespace RLGameGUI
 
         object.AddMember("fill_mode", int(Fillmode), alloc);
 
-        GUIScreenWriter::WriteVector2(object, "npatch_gutters", NPatchGutters, document);
+        GUIScreenWriter::WriteRectangle(object, "npatch_gutters", NPatchGutters, document);
 
         return true;
     }
@@ -573,11 +578,18 @@ namespace RLGameGUI
     void GUIComboBox::Add(const std::string& item)
     {
         Items.emplace_back(item);
+        if (SelectedItem < 0)
+        {
+            SelectedItem = 0;
+            TextLabel->SetText(Items[SelectedItem]);
+        }
     }
 
     void GUIComboBox::Clear()
     {
         Items.clear();
+        SelectedItem = -1;
+        TextLabel->SetText("");
     }
 
     int GUIComboBox::GetSelectedItemIndex()
@@ -599,6 +611,70 @@ namespace RLGameGUI
             return nullptr;
 
         return &(Items[item]);
+    }
+
+    void GUIComboBox::OnRender()
+    {
+        GUIPanel::OnRender();
+    }
+
+    void GUIComboBox::Setup()
+    {
+        IncrementButton = GUIButton::Create();
+        IncrementButton->Name = "ComboBoxIncrementButton";
+        IncrementButton->RelativeBounds = RelativeRect(RelativeValue(0.0f, false), RelativeValue(0.0f, false), RelativeValue(1.0f, false), RelativeValue(1.0f, false));
+        IncrementButton->RelativeBounds.HorizontalAlignment = AlignmentTypes::Maximum;
+        IncrementButton->RelativeBounds.VerticalAlignment = AlignmentTypes::Center;
+        IncrementButton->Background.Name = Background.Name;
+        IncrementButton->ElementClicked = [this](GUIElement*) {WantIncrement = true; };
+        IncrementButton->DisableTint = DARKGRAY;
+        AddChild(IncrementButton);
+
+        DecrementButton = GUIButton::Create();
+        DecrementButton->Name = "ComboBoxDecrementButton";
+        DecrementButton->RelativeBounds = RelativeRect(RelativeValue(0.0f, false), RelativeValue(0.0f, false), RelativeValue(1.0f, false), RelativeValue(1.0f, false));
+        DecrementButton->RelativeBounds.HorizontalAlignment = AlignmentTypes::Minimum;
+        DecrementButton->RelativeBounds.VerticalAlignment = AlignmentTypes::Center;
+        DecrementButton->Background.Name = Background.Name;
+        DecrementButton->ElementClicked = [this](GUIElement*) {WantDecrement = true; };
+        DecrementButton->DisableTint = DARKGRAY;
+        AddChild(DecrementButton);
+
+        TextLabel = GUILabel::Create();
+        TextLabel->Name = "ComboBoxText";
+        TextLabel->TextFont.Size = 10;
+        TextLabel->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(1.0f, true), RelativeValue(1.0f, false));
+        TextLabel->HorizontalAlignment = AlignmentTypes::Center;
+        TextLabel->VerticalAlignment = AlignmentTypes::Center;
+        AddChild(TextLabel);
+    }
+
+    void GUIComboBox::OnPreUpdate()
+    {
+        WantDecrement = false;
+        WantIncrement = false;
+
+        DecrementButton->Disabled = SelectedItem <= 0;
+        IncrementButton->Disabled = SelectedItem < 0 || SelectedItem == int(Items.size()) - 1;
+    }
+
+    void GUIComboBox::OnPostChildUpdate()
+    {
+        int currentIndex = SelectedItem;
+        if (WantIncrement)
+        {
+            if (SelectedItem < int(Items.size()) - 1)
+                SelectedItem++;
+        }
+
+        if (WantDecrement)
+        {
+            if (SelectedItem > 0)
+                SelectedItem--;
+        }
+
+        if (SelectedItem != currentIndex && SelectedItem >= 0)
+            TextLabel->SetText(Items[SelectedItem]);
     }
 
     bool GUIComboBox::Read(const Value& object, Document& document)

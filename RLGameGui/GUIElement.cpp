@@ -35,6 +35,8 @@ namespace RLGameGUI
 {
 	void GUIElement::Update(Vector2 mousePostion)
 	{
+		OnPreUpdate();
+
         if (RelativeBounds.IsDirty())
             Resize();
 
@@ -87,6 +89,8 @@ namespace RLGameGUI
 
 		for (auto child : Children)
 			child->Update(mousePostion);
+
+		OnPostChildUpdate();
 	}
 
 	void GUIElement::Resize()
@@ -216,11 +220,11 @@ namespace RLGameGUI
 		return nullptr;
 	}
 
-	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect)
+	float RelativeValue::ResolvePos(const Rectangle& parrentScreenRect, bool isXAis)
 	{
 		Clean();
 
-		float origin = AxisType == AxisTypes::Horizontal ? parrentScreenRect.x : parrentScreenRect.y;
+		float origin = isXAis ? parrentScreenRect.x : parrentScreenRect.y;
 		float size = AxisType == AxisTypes::Horizontal ? parrentScreenRect.width : parrentScreenRect.height;
 
 		float pixelValue = SizeValue;
@@ -276,7 +280,7 @@ namespace RLGameGUI
 	Vector2 RelativePoint::ResolvePos(const Rectangle& parent)
 	{
 		Clean();
-		return Vector2{ X.ResolvePos(parent), Y.ResolvePos(parent) };
+		return Vector2{ X.ResolvePos(parent, true), Y.ResolvePos(parent, false) };
 	}
 
 	Vector2 RelativePoint::ResolveSize(const Rectangle& parent)
@@ -312,15 +316,17 @@ namespace RLGameGUI
 		return true;
     }
 
-	float GetAllginedValue(float value, AlignmentTypes Alignment, float size, float offset)
+	float GetAllginedValue(float value, AlignmentTypes Alignment, float size, float parrentSize, float offset)
 	{
 		if (Alignment == AlignmentTypes::Maximum)
 		{
+			value += parrentSize;
 			value -= size;
 			value -= offset;
 		}
 		else if (Alignment == AlignmentTypes::Center)
 		{
+			value += parrentSize * 0.5f;
 			value -= size * 0.5f;
 			value += offset;
 		}
@@ -335,8 +341,8 @@ namespace RLGameGUI
 		Vector2 pixelSize = Size.ResolveSize(parent);
 		Vector2 pixelOrigin = Origin.ResolvePos(parent);
 
-		pixelOrigin.x = GetAllginedValue(pixelOrigin.x, HorizontalAlignment, pixelSize.x, Offset.x);
-		pixelOrigin.y = GetAllginedValue(pixelOrigin.y, VerticalAlignment, pixelSize.y, Offset.y);
+		pixelOrigin.x = GetAllginedValue(pixelOrigin.x, HorizontalAlignment, pixelSize.x, parent.width, Offset.x);
+		pixelOrigin.y = GetAllginedValue(pixelOrigin.y, VerticalAlignment, pixelSize.y, parent.height, Offset.y);
 
 		return Rectangle{ pixelOrigin.x, pixelOrigin.y, pixelSize.x, pixelSize.y };
     }

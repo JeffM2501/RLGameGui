@@ -60,7 +60,7 @@ int main( int argc, char** argv)
 
 	std::string imageButton = ("ButtonBackground.png");
 	std::string imageButtonHover = ("ButtonBackground.hover.png");
-	std::string imageButtonDisabled = ("ButtonBackground.disabled.png");
+	std::string imageButtonDisabled = ("button_square_depth_border.png");
 	std::string imageButtonPressed = ("ButtonBackground.active.png");
 	
 	int fontSize = 26;
@@ -70,68 +70,124 @@ int main( int argc, char** argv)
 
 	GUIScreen::Ptr rootScreen = GUIScreen::Create();
 
-	GUIPanel::Ptr panel = GUIPanel::Create();
-	panel->Name = "panel1";
-	panel->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(1.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-	panel->Background.Name = panelBG;
-	panel->Padding = RelativePoint(16, 16);
-	panel->Fillmode = PanelFillModes::NPatch;
-	panel->NPatchGutters = Vector2{ 16, 16 };
+    GUIPanel::Ptr panel = GUIPanel::Create();
+    panel->Name = "Panel1";
+    panel->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+    panel->Background.Name = panelBG;
+    panel->Padding = RelativePoint(16, 16);
+    panel->Fillmode = PanelFillModes::NPatch;
+    panel->NPatchGutters = Rectangle{ 16, 16, 16, 16 };
 
-	panel->Tint = WHITE;
-	rootScreen->AddElement(panel);
+    panel->Tint = WHITE;
+    rootScreen->AddElement(panel);
+
+
+    GUIPanel::Ptr panel2 = GUIPanel::Create();
+    panel2->Name = "Panel2";
+    panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
+    panel2->Tint = GRAY;
+    panel2->Outline = BLACK;
+    panel2->OutlineThickness = 4;
+
+    panel->AddChild(panel2);
+
+    GUIPanel::Ptr comboPanel = GUIPanel::Create();
+    comboPanel->Name = "Panel3";
+    comboPanel->RelativeBounds = RelativeRect{ 0.0f, 0.25f, 1.0f, 0.75f };
+    comboPanel->Tint = BLANK;
+    comboPanel->Outline = BLANK;
+    comboPanel->OutlineThickness = 0;
+
+    panel->AddChild(comboPanel);
+
+    GUILabel::Ptr testLabel = GUILabel::Create("Test Label");
+    testLabel->RelativeBounds = RelativeRect{ 10, 10, 500, 40 };
+    testLabel->Padding.X.SizeValue = 10;
+    testLabel->TextFont.Name = textFont;
+    testLabel->TextFont.Size = fontSize;
+    testLabel->Tint = textColor;
+    comboPanel->AddChild(testLabel);
 	
-	GUIPanel::Ptr panel2 = GUIPanel::Create();
-	panel2->Name = "Panel2";
-	panel2->RelativeBounds = RelativeRect{ 0.0f, 0.0f, 1.0f, 0.25f };
-	panel2->Tint = GRAY;
-	panel2->Outline = BLACK;
-	panel2->OutlineThickness = 4;
+	GUIComboBox::Ptr testCombo = GUIComboBox::Create();
+	testCombo->Name = "ComboBox";
+	testCombo->RelativeBounds.Origin.X = RelativeValue(0.0f, true);
+    testCombo->RelativeBounds.Origin.Y = RelativeValue(55, false);
+
+    testCombo->RelativeBounds.Size.X = RelativeValue(1.0f, true);
+    testCombo->RelativeBounds.Size.Y = RelativeValue(55, false);
+
+	testCombo->Fillmode = PanelFillModes::NPatch;
+	testCombo->NPatchGutters = Rectangle{ 16,16,16,16 };
+	testCombo->Background.Name = "KeyValueBackground.png";
+
+	testCombo->IncrementButton->Background.Name = "pip_up.png";
+	testCombo->IncrementButton->PressTexture.Name = "pip_down.png";
+	testCombo->IncrementButton->RelativeBounds.Offset.x = 10;
+	testCombo->IncrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
+    testCombo->IncrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f,false);
+
+    testCombo->DecrementButton->Background.Name = "pip_up.png";
+    testCombo->DecrementButton->PressTexture.Name = "pip_down.png";
+	testCombo->DecrementButton->RelativeBounds.Offset.x = 10;
+    testCombo->DecrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
+    testCombo->DecrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f, false);
+
+	testCombo->TextLabel->Tint = textColor;
+	testCombo->TextLabel->TextFont.Name = textFont;
+	testCombo->TextLabel->TextFont.Size = fontSize;
+	testCombo->TextLabel->Tint = textColor;
+
+	testCombo->Add("Item 1");
+	testCombo->Add("Item 2");
+	testCombo->Add("Item 3");
+	comboPanel->AddChild(testCombo);
+	//rootScreen->AddElement(testCombo);
+
 	
-	panel->AddChild(panel2);
-	
-	GUILabel::Ptr label = GUILabel::Create("I am IRON MAN",textFont,fontSize);
-	label->RelativeBounds = RelativeRect{ 0, 10, 500, 40 };
-	label->Tint = textColor;
-	rootScreen->AddElement(label);
+    GUILabel::Ptr label = GUILabel::Create("I am IRON MAN", textFont, fontSize);
+    label->RelativeBounds = RelativeRect{ 10, 10, 500, 40 };
+    label->Padding.X.SizeValue = 10;
+    label->Tint = textColor;
+    rootScreen->AddElement(label);
+
+    GUILabel::Ptr label2 = GUILabel::Create("Centered", textFont, fontSize);
+    label2->Tint = textColor;
+    label2->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
+    label2->HorizontalAlignment = AlignmentTypes::Center;
+    rootScreen->AddElement(label2);
   
-  	GUILabel::Ptr label2 = GUILabel::Create("Centered", textFont, fontSize);
-  	label2->Tint = textColor;
-  	label2->RelativeBounds = RelativeRect{ 0, 20, 500, 40 };
-  	label2->HorizontalAlignment = AlignmentTypes::Center;
-  	rootScreen->AddElement(label2);
-  
-  	GUILabel::Ptr label3 = GUILabel::Create("Right", textFont, fontSize);
-  	label3->Tint = textColor;
-	label3->Id = "DynamicLabel";
-  	label3->RelativeBounds = RelativeRect{ 0, 40, 500, 40 };
-  	label3->HorizontalAlignment = AlignmentTypes::Maximum;
-  	rootScreen->AddElement(label3);
-  
-  	GUIImage::Ptr panel3 = GUIImage::Create();
-  	panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(1.0f, false), RelativeValue(0.125f, true), RelativeValue(0.125f, true), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-  	panel3->Tint = WHITE;
-  	panel3->Background.Name = logo;
-  	rootScreen->AddElement(panel3);
-  
-  	GUIButton::Ptr button = GUIButton::Create(std::string(), imageButton);
-  	button->Id = "Clickable Button";
-  	button->RelativeBounds = RelativeRect(RelativeValue(1.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
-  	button->TextColor = WHITE;
-  	button->TextFont.Name = textFont;
-  	button->TextFont.Size = fontSize;
-  	button->SetText("Button");
-  	button->Fillmode = PanelFillModes::NPatch;
-  	button->NPatchGutters = Vector2{ 16, 16 };
-  	button->HoverTexture.Name = imageButtonHover;
-  	button->DisableTexture.Name = imageButtonDisabled;
-  	button->PressTexture.Name = imageButtonPressed;
-  	rootScreen->AddElement(button);
+    GUILabel::Ptr label3 = GUILabel::Create("Right", textFont, fontSize);
+    label3->Tint = textColor;
+    label3->Id = "DynamicLabel";
+    label3->RelativeBounds = RelativeRect{ 0, 60, 500, 40 };
+    label3->HorizontalAlignment = AlignmentTypes::Maximum;
+    rootScreen->AddElement(label3);
+
+    GUIImage::Ptr panel3 = GUIImage::Create();
+    panel3->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(256), RelativeValue(256), AlignmentTypes::Minimum, AlignmentTypes::Maximum, Vector2{ 10,10 });
+    panel3->Tint = WHITE;
+    panel3->Background.Name = logo;
+
+	GUIButton::Ptr button = GUIButton::Create(std::string(), imageButton);
+	button->Id = "Clickable Button";
+	button->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(150, true), RelativeValue(50, true), AlignmentTypes::Maximum, AlignmentTypes::Minimum, Vector2{ 10,10 });
+	button->TextColor = WHITE;
+	button->TextFont.Name = textFont;
+	button->TextFont.Size = fontSize;
+	button->SetText("Button");
+	button->Fillmode = PanelFillModes::NPatch;
+	button->NPatchGutters = Rectangle{ 16, 16, 16,16 };
+	button->HoverTexture.Name = imageButtonHover;
+	button->DisableTexture.Name = imageButtonDisabled;
+	button->DisableTint = GRAY;
+	button->PressTexture.Name = imageButtonPressed;
+	rootScreen->AddElement(button);
 
 	GUILabel* dynamicButton = rootScreen->FindElement<GUILabel>("DynamicLabel");
 
 	// register a click event handler
 	rootScreen->RegisterEventHandler("Clickable Button", GUIElementEvent::Click, [&dynamicButton](GUIElement&, GUIElementEvent, void*) {if (dynamicButton) dynamicButton->SetText("Clicked"); });
+    rootScreen->AddElement(panel3);
 
 	Manager::PushScreen(rootScreen);
 
@@ -147,7 +203,7 @@ int main( int argc, char** argv)
 		DrawTexturePro(background, Rectangle{ offset, offset,GetScreenWidth() * scale,GetScreenHeight() * scale }, Rectangle{ 0,0,(float)GetScreenWidth(),(float)GetScreenHeight() }, Vector2{ 0,0 }, 0, Color{ 255,255,255,64 });
 		Manager::Render();
 
-		DrawFPS(panel3->GetScreenRect().x, panel3->GetScreenRect().y - 20);
+		DrawFPS(int(panel3->GetScreenRect().x), int(panel3->GetScreenRect().y) - 20);
 		EndDrawing();
 	}
 	UnloadTexture(background);

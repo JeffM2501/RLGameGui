@@ -58,7 +58,10 @@ namespace RLGameGUI
 
 	void GUIScreen::Update()
 	{
-		PostRenderCallbacks.clear();
+		for (auto& [layer, callbacks] : PostRenderCallbacks)
+		{
+			callbacks.clear();
+		}
 
 		if (IsWindowResized())
 			DoResize();
@@ -77,8 +80,11 @@ namespace RLGameGUI
         for (auto child : Children)
             child->Render();
 
-		for (auto& callback : PostRenderCallbacks)
-			callback();
+		for (auto& [layer, callbacks] : PostRenderCallbacks)
+		{
+			for (auto& callback : callbacks)
+				callback();
+		}
 	}
 
     GUIElement::Ptr GUIScreen::AddElement(GUIElement::Ptr element)
@@ -88,6 +94,16 @@ namespace RLGameGUI
 		OnElementAdd(element);
 
 		return element;
+    }
+
+    void GUIScreen::AddPostRenderCallback(int layer, ScreenEventCallback callback)
+    {
+		auto itr = PostRenderCallbacks.find(layer);
+		if (itr == PostRenderCallbacks.end())
+		{
+			itr = PostRenderCallbacks.insert_or_assign(layer, std::vector<ScreenEventCallback>()).first;
+		}
+		itr->second.push_back(callback);
     }
 
     void GUIScreen::RegisterEventHandler(const std::string& elementId, GUIElementEvent eventType, EventHandler handler)

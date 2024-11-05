@@ -85,7 +85,7 @@ namespace RLGameGUI
 
         PanelFillModes Fillmode = PanelFillModes::Fill;
 
-        Vector2 NPatchGutters = Vector2{ 0,0 };
+        Rectangle NPatchGutters = Rectangle{ 0 ,0, -1, -1 };
 
         GUIPanel() {};
         GUIPanel(Color tint) : Tint(Tint) {};
@@ -243,8 +243,16 @@ namespace RLGameGUI
         Color TextColor = BLACK;
         FontRecord TextFont;
 
-        GUIComboBox() {}
-        GUIComboBox(const std::string& texture) { Background.Name = texture; }
+        GUIComboBox() 
+        { 
+            Setup();
+        }
+
+        GUIComboBox(const std::string& texture)
+        {
+            Background.Name = texture; 
+            Setup();
+        }
 
         typedef std::shared_ptr<GUIComboBox> Ptr;
         inline static Ptr Create() { return std::make_shared<GUIComboBox>(); }
@@ -264,9 +272,24 @@ namespace RLGameGUI
         bool Read(const rapidjson::Value& object, rapidjson::Document& document) override;
         bool Write(rapidjson::Value& object, rapidjson::Document& document) override;
 
+        void OnRender() override;
+
+        GUIButton::Ptr IncrementButton = nullptr;
+        GUIButton::Ptr DecrementButton = nullptr;
+
+        GUILabel::Ptr TextLabel = nullptr;
+
     protected:
+        void Setup();
+
+        void OnPreUpdate() override;
+        void OnPostChildUpdate() override;
+
         std::vector<std::string> Items;
 
         int SelectedItem = -1;
+
+        bool WantIncrement = false;
+        bool WantDecrement = false;
     };
 }

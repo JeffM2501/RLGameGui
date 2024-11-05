@@ -75,14 +75,14 @@ namespace RLGameGUI
 			AxisType = horizontal ? AxisTypes::Horizontal : AxisTypes::Vertical;
 		}
 
-        RelativeValue(int value, bool horizontal)
+        RelativeValue(int value, bool horizontal = true)
         {
             SizeType = RelativeSizeTypes::Pixel;
 			SizeValue = (float)value;
             AxisType = horizontal ? AxisTypes::Horizontal : AxisTypes::Vertical;
         }
 
-		float ResolvePos(const Rectangle& parrentScreenRect);
+		float ResolvePos(const Rectangle& parrentScreenRect, bool isXAxis);
 		float ResolveSize(const Rectangle& parrentScreenRect);
 
 		inline bool IsDirty() const { return Dirty; }
@@ -230,7 +230,9 @@ namespace RLGameGUI
 		bool Hovered = false;
 		bool Clicked = false;
 
+		virtual void OnPreUpdate() {}
 		virtual void OnUpdate() {}
+        virtual void OnPostChildUpdate() {}
 		virtual void OnRender() {}
 		virtual void OnPreResize() {}
 		virtual void OnResize() {}

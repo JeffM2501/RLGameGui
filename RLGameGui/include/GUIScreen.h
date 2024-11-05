@@ -32,6 +32,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <unordered_map>
+#include <map>
 
 #include "GUIElement.h"
 #include "RootElement.h"
@@ -39,6 +41,11 @@
 namespace RLGameGUI
 {
 	using EventHandler = std::function<void(GUIElement&, GUIElementEvent,void*)>;
+
+	using ElementLayerRenderCallback = std::function<void(void)>;
+
+	constexpr int ComboLayer = 1;
+	constexpr int PopupLayer = 100;
 
 	class GUIScreen : public RootElement
 	{
@@ -61,7 +68,7 @@ namespace RLGameGUI
 
 		typedef std::function<void()> ScreenEventCallback;
 
-		inline void AddPostRenderCallback(ScreenEventCallback callback) { PostRenderCallbacks.emplace_back(callback); }
+		void AddPostRenderCallback(int layer, ScreenEventCallback callback);
 
 		void RegisterEventHandler(const std::string& elmentId, GUIElementEvent eventType, EventHandler handler);
 
@@ -78,14 +85,13 @@ namespace RLGameGUI
 		virtual void OnElementAdd(GUIElement::Ptr element) {}
 
         void PostEvent(GUIElement* element, GUIElementEvent eventType, void* data) override;
-
-		std::vector<ScreenEventCallback> PostRenderCallbacks;
-
 		struct EventHandlerInfo
 		{
 			GUIElementEvent EventType;
 			EventHandler	Handler;
 		};
 		std::unordered_map<std::string, std::vector<EventHandlerInfo>> EventHandlers;
+
+		std::map<int, std::vector<ScreenEventCallback>> PostRenderCallbacks;
 	};
 }
