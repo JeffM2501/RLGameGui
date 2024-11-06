@@ -196,9 +196,12 @@ int main( int argc, char** argv)
 	button->SetText("Button");
 	button->Background.Fillmode = PanelFillModes::NPatch;
 	button->Background.NPatchGutters = Rectangle{ 16, 16, 16,16 };
+	button->Hover = button->Background;
 	button->Hover.Texture.Name = imageButtonHover;
+	button->Disable = button->Background;
 	button->Disable.Texture.Name = imageButtonDisabled;
 	button->Disable.Tint = GRAY;
+	button->Press = button->Background;
 	button->Press.Texture.Name = imageButtonPressed;
 	rootScreen->AddElement(button);
 
