@@ -132,6 +132,9 @@ namespace RLGameGUI
 
 		for (auto child : Children)
 			child->Render();
+
+		if (Renders)
+			OnPostRender();
 	}
 
 	const Rectangle& GUIElement::GetScreenRect()

@@ -35,14 +35,6 @@
 
 using namespace RLGameGUI;
 
-void RegisterElements()
-{
-	GUIPanel::Register();
-	GUILabel::Register();
-	GUIImage::Register();
-	GUIButton::Register();
-}
-
 int main( int argc, char** argv)
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
@@ -50,7 +42,7 @@ int main( int argc, char** argv)
 	SetTargetFPS(300);
 
 	TextureManager::SetResourceDir("resources");
-	RegisterElements();
+	RegisterStandardElements();
 
 	Texture background = TextureManager::GetTexture("hex.png");
 	Color backgroundColor = GetColor(0x1F252D);
@@ -73,14 +65,13 @@ int main( int argc, char** argv)
     GUIPanel::Ptr panel = GUIPanel::Create();
     panel->Name = "Panel1";
     panel->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(0.75f, false), RelativeValue(0.75f, false), AlignmentTypes::Maximum, AlignmentTypes::Maximum, Vector2{ 10,10 });
-    panel->Background.Name = panelBG;
+    panel->Background.Texture.Name = panelBG;
     panel->Padding = RelativePoint(16, 16);
-    panel->Fillmode = PanelFillModes::NPatch;
-    panel->NPatchGutters = Rectangle{ 16, 16, 16, 16 };
+    panel->Background.Fillmode = PanelFillModes::NPatch;
+    panel->Background.NPatchGutters = Rectangle{ 16, 16, 16, 16 };
 
     panel->Tint = WHITE;
     rootScreen->AddElement(panel);
-
 
     GUIPanel::Ptr panel2 = GUIPanel::Create();
     panel2->Name = "Panel2";
@@ -116,18 +107,18 @@ int main( int argc, char** argv)
     testCombo->RelativeBounds.Size.X = RelativeValue(1.0f, true);
     testCombo->RelativeBounds.Size.Y = RelativeValue(55, false);
 
-	testCombo->Fillmode = PanelFillModes::NPatch;
-	testCombo->NPatchGutters = Rectangle{ 16,16,16,16 };
-	testCombo->Background.Name = "KeyValueBackground.png";
+	testCombo->Background.Fillmode = PanelFillModes::NPatch;
+	testCombo->Background.NPatchGutters = Rectangle{ 16,16,16,16 };
+	testCombo->Background.Texture.Name = "KeyValueBackground.png";
 
-	testCombo->IncrementButton->Background.Name = "pip_up.png";
-	testCombo->IncrementButton->PressTexture.Name = "pip_down.png";
+	testCombo->IncrementButton->Background.Texture.Name = "pip_up.png";
+	testCombo->IncrementButton->Press.Texture.Name = "pip_down.png";
 	testCombo->IncrementButton->RelativeBounds.Offset.x = 10;
 	testCombo->IncrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
     testCombo->IncrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f,false);
 
-    testCombo->DecrementButton->Background.Name = "pip_up.png";
-    testCombo->DecrementButton->PressTexture.Name = "pip_down.png";
+    testCombo->DecrementButton->Background.Texture.Name = "pip_up.png";
+    testCombo->DecrementButton->Press.Texture.Name = "pip_down.png";
 	testCombo->DecrementButton->RelativeBounds.Offset.x = 10;
     testCombo->DecrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
     testCombo->DecrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f, false);
@@ -141,9 +132,37 @@ int main( int argc, char** argv)
 	testCombo->Add("Item 2");
 	testCombo->Add("Item 3");
 	comboPanel->AddChild(testCombo);
-	//rootScreen->AddElement(testCombo);
 
-	
+	GUICheckBox::Ptr checkbox = GUICheckBox::Create();
+	checkbox->Name = "Checkbox";
+	checkbox->RelativeBounds.Origin.X = RelativeValue(0.0f, true);
+	checkbox->RelativeBounds.Origin.Y = RelativeValue(155, false);
+
+	checkbox->RelativeBounds.Size.X = RelativeValue(32, false);
+	checkbox->RelativeBounds.Size.Y = RelativeValue(32, false);
+
+	checkbox->Background.Fillmode = PanelFillModes::NPatch;
+	checkbox->Background.NPatchGutters = Rectangle{ 16,16,16,16 };
+	checkbox->Background.Texture.Name = "KeyValueBackground.png";
+
+	checkbox->CheckTexture.Tint = WHITE;
+	checkbox->CheckTexture.Texture.Name = "pip_up.png";
+
+	GUILabel::Ptr checkboxLabel = GUILabel::Create("Checkbox", textFont, fontSize);
+
+	checkboxLabel->Tint = WHITE;
+	checkboxLabel->RelativeBounds.Origin.X = RelativeValue(1.3f, true);
+	checkboxLabel->RelativeBounds.Origin.Y = RelativeValue(0.2f, false);
+
+	checkboxLabel->RelativeBounds.Size.X = RelativeValue(200, true);
+	checkboxLabel->RelativeBounds.Size.Y = RelativeValue(0.0f, false);
+	checkboxLabel->RelativeBounds.HorizontalAlignment = AlignmentTypes::Minimum;
+	checkboxLabel->VerticalAlignment = AlignmentTypes::Minimum;
+
+	checkbox->AddChild(checkboxLabel);
+
+	comboPanel->AddChild(checkbox);
+
     GUILabel::Ptr label = GUILabel::Create("I am IRON MAN", textFont, fontSize);
     label->RelativeBounds = RelativeRect{ 10, 10, 500, 40 };
     label->Padding.X.SizeValue = 10;
@@ -175,12 +194,12 @@ int main( int argc, char** argv)
 	button->TextFont.Name = textFont;
 	button->TextFont.Size = fontSize;
 	button->SetText("Button");
-	button->Fillmode = PanelFillModes::NPatch;
-	button->NPatchGutters = Rectangle{ 16, 16, 16,16 };
-	button->HoverTexture.Name = imageButtonHover;
-	button->DisableTexture.Name = imageButtonDisabled;
-	button->DisableTint = GRAY;
-	button->PressTexture.Name = imageButtonPressed;
+	button->Background.Fillmode = PanelFillModes::NPatch;
+	button->Background.NPatchGutters = Rectangle{ 16, 16, 16,16 };
+	button->Hover.Texture.Name = imageButtonHover;
+	button->Disable.Texture.Name = imageButtonDisabled;
+	button->Disable.Tint = GRAY;
+	button->Press.Texture.Name = imageButtonPressed;
 	rootScreen->AddElement(button);
 
 	GUILabel* dynamicButton = rootScreen->FindElement<GUILabel>("DynamicLabel");

@@ -35,6 +35,15 @@ using namespace rapidjson;
 
 namespace RLGameGUI
 {
+    void RegisterStandardElements()
+    {
+        GUIPanel::Register();
+        GUILabel::Register();
+        GUIImage::Register();
+        GUICheckBox::Register();
+        GUIButton::Register();
+    }
+
     Texture2D TextureRecord::GetTexture()
     {
         if (Texture.id != 0)
@@ -51,6 +60,54 @@ namespace RLGameGUI
 
         CachedFont = FontManager::GetFont(Name, Size);
         return CachedFont;
+    }
+
+    bool GUITexture::Read(const rapidjson::Value& object)
+    {
+        GUIScreenReader::ReadColor(object, "tint", Tint);
+        GUIScreenReader::ReadRectangle(object, "source_rect", SourceRect);
+        GUIScreenReader::ReadMember(object, "texture", Texture.Name);
+        GUIScreenReader::ReadVector2(object, "offset", Offset);
+        GUIScreenReader::ReadVector2(object, "scale", Scale);
+
+        int fill = 0;
+        if (GUIScreenReader::ReadMember(object, "fill_mode", fill) && fill <= int(PanelFillModes::NPatch))
+        {
+            Fillmode = PanelFillModes(fill);
+        }
+
+        GUIScreenReader::ReadRectangle(object, "npatch_gutters", NPatchGutters);
+
+        return true;
+    }
+
+    bool GUITexture::ReadMember(const rapidjson::Value& object, const std::string& name)
+    {
+        auto itr = object.FindMember(name.c_str());
+        if (itr == object.MemberEnd() || !itr->value.IsObject())
+            return false;
+
+        return Read(itr->value);
+    }
+
+    bool GUITexture::Write(rapidjson::Value& object, rapidjson::Document& document)
+    {
+        auto alloc = document.GetAllocator();
+
+        GUIScreenWriter::WriteColor(object, "tint", Tint, document);
+        GUIScreenWriter::WriteRectangle(object, "source_rect", SourceRect, document);
+
+        if (Texture.Valid())
+            object.AddMember("texture", Value(Texture.Name.c_str(), alloc), alloc);
+
+        GUIScreenWriter::WriteVector2(object, "offset", Offset, document);
+        GUIScreenWriter::WriteVector2(object, "scale", Scale, document);
+
+        object.AddMember("fill_mode", int(Fillmode), alloc);
+
+        GUIScreenWriter::WriteRectangle(object, "npatch_gutters", NPatchGutters, document);
+
+        return true;
     }
 
     void GUIPanel::Draw(Color fill, Color outline, const Vector2& offset, const Vector2& scale)
@@ -90,48 +147,50 @@ namespace RLGameGUI
         EndScissorMode();
     }
 
-    void GUIPanel::Draw(const Texture2D &fill, Color tint, const Rectangle& source, const Vector2& offset, const Vector2& scale)
+    void GUIPanel::Draw(GUITexture& fill)
     {
         Rectangle rect = GetScreenRect();
 
-        rect.x += offset.x;
-        rect.y += offset.y;
-        rect.width += scale.x;
-        rect.height += scale.y;
+        rect.x += fill.Offset.x;
+        rect.y += fill.Offset.y;
+        rect.width += fill.Scale.x;
+        rect.height += fill.Scale.y;
 
-        if (SourceRect.width == 0)
-            SourceRect = Rectangle{ 0,0,(float)fill.width,(float)fill.height };
+        Texture2D texture = fill.Texture.GetTexture();
 
-        if (Fillmode == PanelFillModes::Tile)
+        if (fill.SourceRect.width == 0)
+            fill.SourceRect = Rectangle{ 0,0,(float)texture.width,(float)texture.height };
+
+        if (fill.Fillmode == PanelFillModes::Tile)
         {
-            DrawTextureTiled(fill, source, rect, tint);
+            DrawTextureTiled(texture, fill.SourceRect, rect, fill.Tint);
         }
-        else if (Fillmode == PanelFillModes::Fill)
+        else if (fill.Fillmode == PanelFillModes::Fill)
         {
-            DrawTexturePro(fill, source, rect, Vector2Zeros, 0, tint);
+            DrawTexturePro(texture, fill.SourceRect, rect, Vector2Zeros, 0, fill.Tint);
         }
-        else if (Fillmode == PanelFillModes::NPatch)
+        else if (fill.Fillmode == PanelFillModes::NPatch)
         {
             if (NPatchData.source.width == 0)
             {
-                NPatchData.left = NPatchData.right = (int)NPatchGutters.x;
-                if (NPatchGutters.width >= 0)
-                    NPatchData.right = int(NPatchGutters.width);
+                NPatchData.left = NPatchData.right = (int)fill.NPatchGutters.x;
+                if (fill.NPatchGutters.width >= 0)
+                    NPatchData.right = int(fill.NPatchGutters.width);
 
-                NPatchData.top = NPatchData.bottom = (int)NPatchGutters.y;
-                if (NPatchGutters.height >= 0)
-                    NPatchData.bottom = int(NPatchGutters.height);
+                NPatchData.top = NPatchData.bottom = (int)fill.NPatchGutters.y;
+                if (fill.NPatchGutters.height >= 0)
+                    NPatchData.bottom = int(fill.NPatchGutters.height);
 
-                if (NPatchGutters.x == 0)
+                if (fill.NPatchGutters.x == 0)
                     NPatchData.layout = NPATCH_THREE_PATCH_HORIZONTAL;
-                else if (NPatchGutters.y == 0)
+                else if (fill.NPatchGutters.y == 0)
                     NPatchData.layout = NPATCH_THREE_PATCH_VERTICAL;
                 else
                     NPatchData.layout = NPATCH_NINE_PATCH;
             } 
-            NPatchData.source = source;
+            NPatchData.source = fill.SourceRect;
 
-            DrawTextureNPatch(fill, NPatchData, rect, Vector2Zeros, 0, tint);
+            DrawTextureNPatch(texture, NPatchData, rect, Vector2Zeros, 0, fill.Tint);
         }
     }
 
@@ -144,16 +203,7 @@ namespace RLGameGUI
 
         GUIScreenReader::ReadMember(object, "outline_thickness", OutlineThickness);
 
-        GUIScreenReader::ReadMember(object, "background", Background.Name);
-        GUIScreenReader::ReadRectangle(object, "source_rect", SourceRect);
-
-        int fill = 0;
-        if (GUIScreenReader::ReadMember(object, "fill_mode", fill) && fill <= int(PanelFillModes::NPatch))
-        {
-            Fillmode = PanelFillModes(fill);
-        }
-
-        GUIScreenReader::ReadRectangle(object, "npatch_gutters", NPatchGutters);
+        Background.ReadMember(object, "background");
 
         return true;
     }
@@ -169,24 +219,19 @@ namespace RLGameGUI
 
         object.AddMember("outline_thickness", OutlineThickness, alloc);
 
-        if (Background.Valid())
-            object.AddMember("background", Value(Background.Name.c_str(), alloc), alloc);
-        
-        GUIScreenWriter::WriteRectangle(object, "source_rect", SourceRect, document);
-
-        object.AddMember("fill_mode", int(Fillmode), alloc);
-
-        GUIScreenWriter::WriteRectangle(object, "npatch_gutters", NPatchGutters, document);
-
+        Value background(kObjectType);
+        Background.Write(background, document);
+        object.AddMember("background", background, alloc);
+     
         return true;
     }
 
 	void GUIPanel::OnRender()
 	{
-        if (!Background.Valid())
+        if (!Background.Texture.Valid())
             Draw(Tint, Outline, Vector2Zeros, Vector2Zeros);
         else
-            Draw(Background.GetTexture(), Tint, SourceRect, Vector2Zeros, Vector2Zeros);
+            Draw(Background);
 	}
 
     void GUIImage::OnRender()
@@ -371,39 +416,39 @@ namespace RLGameGUI
 
     void GUIButton::SetButtonFrames(int framesX, int framesY, int backgroundX, int backgroundY, int hoverX, int hoverY, int pressX, int pressY, int disableX, int disableY )
     {
-        float xGrid = (float)Background.GetTexture().width / (float)framesX;
-        float yGrid = (float)Background.GetTexture().height / (float)framesY;
+        float xGrid = (float)Background.Texture.GetTexture().width / (float)framesX;
+        float yGrid = (float)Background.Texture.GetTexture().height / (float)framesY;
 
         if (backgroundX >= 0 && backgroundY >= 0)
         {
-            SourceRect.x = backgroundX * xGrid;
-            SourceRect.y = backgroundY * yGrid;
-            SourceRect.width = xGrid;
-            SourceRect.height = yGrid;
+            Background.SourceRect.x = backgroundX * xGrid;
+            Background.SourceRect.y = backgroundY * yGrid;
+            Background.SourceRect.width = xGrid;
+            Background.SourceRect.height = yGrid;
         }
 
         if (hoverX >= 0 && hoverY >= 0)
         {
-            HoverSourceRect.x = hoverX * xGrid;
-            HoverSourceRect.y = hoverY * yGrid;
-            HoverSourceRect.width = xGrid;
-            HoverSourceRect.height = yGrid;
+            Hover.SourceRect.x = hoverX * xGrid;
+            Hover.SourceRect.y = hoverY * yGrid;
+            Hover.SourceRect.width = xGrid;
+            Hover.SourceRect.height = yGrid;
         }
 
         if (pressX >= 0 && pressY >= 0)
         {
-            PressSourceRect.x = pressX * xGrid;
-            PressSourceRect.y = pressY * yGrid;
-            PressSourceRect.width = xGrid;
-            PressSourceRect.height = yGrid;
+            Press.SourceRect.x = pressX * xGrid;
+            Press.SourceRect.y = pressY * yGrid;
+            Press.SourceRect.width = xGrid;
+            Press.SourceRect.height = yGrid;
         }
 
         if (disableX >= 0 && disableY >= 0)
         {
-            DisableSourceRect.x = disableX * xGrid;
-            DisableSourceRect.y = disableY * yGrid;
-            DisableSourceRect.width = xGrid;
-            DisableSourceRect.height = yGrid;
+            Disable.SourceRect.x = disableX * xGrid;
+            Disable.SourceRect.y = disableY * yGrid;
+            Disable.SourceRect.width = xGrid;
+            Disable.SourceRect.height = yGrid;
         }
     }
 
@@ -414,73 +459,46 @@ namespace RLGameGUI
 
     void GUIButton::OnRender()
     {
-        Color color = Tint;
         Color labelColor = TextColor;
-        TextureRecord* tx = &Background;
-        Rectangle sourceRect = SourceRect;
-
-        Vector2 offset = Vector2Zeros;
-        Vector2 scale = Vector2Zeros;
+        GUITexture* tx = &Background;
 
         if (Disabled)
         {
-            color = DisableTint;
             labelColor = DisableTextColor;
 
-            if (DisableTexture.Valid())
-                tx = &DisableTexture;
-
-            if (DisableSourceRect.width > 0)
-                sourceRect = DisableSourceRect;
+            if (Disable.Texture.Valid())
+                tx = &Disable;
         }
         else
         {
             if (Clicked)
             {
-                offset = PressOffset;
-                scale = PressScale;
-
-                if (PressTint.a > 0)
-                    color = PressTint;
+                if (Press.Texture.Valid() || Press.Tint.a > 0)
+                    tx = &Press;
 
                 if (PressTextColor.a > 0)
                     labelColor = PressTextColor;
-
-                if (PressTexture.Valid())
-                    tx = &PressTexture;
-
-                if (PressSourceRect.width > 0)
-                    sourceRect = PressSourceRect;
             }
             else if (Hovered)
             {
-                offset = HoverOffset;
-                scale = HoverScale;
-
-                if (HoverTint.a > 0)
-                    color = HoverTint;
+                if (Hover.Texture.Valid() || Hover.Tint.a > 0)
+                    tx = &Hover;
 
                 if (HoverTextColor.a > 0)
                     labelColor = HoverTextColor;
-
-                if (HoverTexture.Valid())
-                    tx = &HoverTexture;
-
-                if (HoverSourceRect.width > 0)
-                    sourceRect = HoverSourceRect;
             }
         }
 
-        if (!tx->Valid())
-            Draw(color, Outline, offset, scale);
+        if (!tx->Texture.Valid())
+            Draw(tx->Tint, Outline, tx->Offset, tx->Scale);
         else
-            Draw(tx->GetTexture(), color, sourceRect, offset, scale);
+            Draw(*tx);
 
         if (!Text.empty())
         {
             Rectangle rect = TextRect;
-            rect.x += offset.x;
-            rect.y += offset.y;
+            rect.x += tx->Offset.x;
+            rect.y += tx->Offset.y;
 
             DrawTextRect(TextFont.GetFont(), Text.c_str(), rect, TextFont.Size, Spacing, labelColor);
         }
@@ -498,24 +516,13 @@ namespace RLGameGUI
         GUIScreenReader::ReadMember(object, "text_size", TextFont.Size);
 
         GUIScreenReader::ReadColor(object, "hover_text_color", HoverTextColor);
-        GUIScreenReader::ReadColor(object, "hover_tint", HoverTint);
-        GUIScreenReader::ReadRectangle(object, "hover_source_rect", HoverSourceRect);
-        GUIScreenReader::ReadMember(object, "hover_texture", HoverTexture.Name);
+        Hover.ReadMember(object, "hover");
 
         GUIScreenReader::ReadColor(object, "press_text_color", PressTextColor);
-        GUIScreenReader::ReadColor(object, "press_tint", PressTint);
-        GUIScreenReader::ReadRectangle(object, "press_source_rect", PressSourceRect);
-        GUIScreenReader::ReadMember(object, "press_texture", PressTexture.Name);
+        Press.ReadMember(object, "press");
 
         GUIScreenReader::ReadColor(object, "disable_text_color", DisableTextColor);
-        GUIScreenReader::ReadColor(object, "disable_tint", DisableTint);
-        GUIScreenReader::ReadRectangle(object, "disable_source_rect", DisableSourceRect);
-        GUIScreenReader::ReadMember(object, "disable_texture", DisableTexture.Name);
-
-        GUIScreenReader::ReadVector2(object, "hover_offset", HoverOffset);
-        GUIScreenReader::ReadVector2(object, "hover_scale", HoverScale);
-        GUIScreenReader::ReadVector2(object, "press_offset", PressOffset);
-        GUIScreenReader::ReadVector2(object, "press_scale", PressScale);
+        Disable.ReadMember(object, "disable");
 
         return true;
     }
@@ -535,28 +542,21 @@ namespace RLGameGUI
         object.AddMember("text_size", TextFont.Size, alloc);
 
         GUIScreenWriter::WriteColor(object, "hover_text_color", HoverTextColor, document);
-        GUIScreenWriter::WriteColor(object, "hover_tint", HoverTint, document);
-        GUIScreenWriter::WriteRectangle(object, "hover_source_rect", HoverSourceRect, document);
-        if (HoverTexture.Valid())
-            object.AddMember("hover_texture", Value(HoverTexture.Name.c_str(), alloc), alloc);
+
+        Value hover(kObjectType);
+        Hover.Write(hover, document);
+        object.AddMember("hover", hover, alloc);
 
         GUIScreenWriter::WriteColor(object, "press_text_color", PressTextColor, document);
-        GUIScreenWriter::WriteColor(object, "press_tint", PressTint, document);
-        GUIScreenWriter::WriteRectangle(object, "press_source_rect", PressSourceRect, document);
-        if (HoverTexture.Valid())
-            object.AddMember("press_texture", Value(PressTexture.Name.c_str(), alloc), alloc);
+        Value press(kObjectType);
+        Press.Write(hover, document);
+        object.AddMember("press", press, alloc);
+
+        Value disable(kObjectType);
+        Disable.Write(disable, document);
+        object.AddMember("disable", disable, alloc);
 
         GUIScreenWriter::WriteColor(object, "disable_text_color", DisableTextColor, document);
-        GUIScreenWriter::WriteColor(object, "disable_tint", DisableTint, document);
-        GUIScreenWriter::WriteRectangle(object, "disable_source_rect", DisableSourceRect, document);
-        if (HoverTexture.Valid())
-            object.AddMember("disable_texture", Value(DisableTexture.Name.c_str(), alloc), alloc);
-
-        GUIScreenWriter::WriteVector2(object, "hover_offset", HoverOffset, document);
-        GUIScreenWriter::WriteVector2(object, "hover_scale", HoverScale, document);
-        GUIScreenWriter::WriteVector2(object, "press_offset", PressOffset, document);
-        GUIScreenWriter::WriteVector2(object, "press_scale", PressScale, document);
-
         return true;
     }
 
@@ -603,6 +603,8 @@ namespace RLGameGUI
             SelectedItem = -1;
 
         SelectedItem = item;
+
+        PostEvent(this, GUIElementEvent::Changed, &SelectedItem);
     }
 
     const std::string* GUIComboBox::GetItem(int item)
@@ -621,26 +623,29 @@ namespace RLGameGUI
     void GUIComboBox::Setup()
     {
         IncrementButton = GUIButton::Create();
+        IncrementButton->Serialize = false;
         IncrementButton->Name = "ComboBoxIncrementButton";
         IncrementButton->RelativeBounds = RelativeRect(RelativeValue(0.0f, false), RelativeValue(0.0f, false), RelativeValue(1.0f, false), RelativeValue(1.0f, false));
         IncrementButton->RelativeBounds.HorizontalAlignment = AlignmentTypes::Maximum;
         IncrementButton->RelativeBounds.VerticalAlignment = AlignmentTypes::Center;
-        IncrementButton->Background.Name = Background.Name;
+        IncrementButton->Background = Background;
         IncrementButton->ElementClicked = [this](GUIElement*) {WantIncrement = true; };
-        IncrementButton->DisableTint = DARKGRAY;
+        IncrementButton->Disable.Tint = DARKGRAY;
         AddChild(IncrementButton);
 
         DecrementButton = GUIButton::Create();
+        DecrementButton->Serialize = false;
         DecrementButton->Name = "ComboBoxDecrementButton";
         DecrementButton->RelativeBounds = RelativeRect(RelativeValue(0.0f, false), RelativeValue(0.0f, false), RelativeValue(1.0f, false), RelativeValue(1.0f, false));
         DecrementButton->RelativeBounds.HorizontalAlignment = AlignmentTypes::Minimum;
         DecrementButton->RelativeBounds.VerticalAlignment = AlignmentTypes::Center;
-        DecrementButton->Background.Name = Background.Name;
+        DecrementButton->Background = Background;
         DecrementButton->ElementClicked = [this](GUIElement*) {WantDecrement = true; };
-        DecrementButton->DisableTint = DARKGRAY;
+        DecrementButton->Disable.Tint = DARKGRAY;
         AddChild(DecrementButton);
 
         TextLabel = GUILabel::Create();
+        TextLabel->Serialize = false;
         TextLabel->Name = "ComboBoxText";
         TextLabel->TextFont.Size = 10;
         TextLabel->RelativeBounds = RelativeRect(RelativeValue(0.0f, true), RelativeValue(0.0f, false), RelativeValue(1.0f, true), RelativeValue(1.0f, false));
@@ -664,13 +669,13 @@ namespace RLGameGUI
         if (WantIncrement)
         {
             if (SelectedItem < int(Items.size()) - 1)
-                SelectedItem++;
+                SetSelectedItemIndex(SelectedItem + 1);
         }
 
         if (WantDecrement)
         {
             if (SelectedItem > 0)
-                SelectedItem--;
+                SetSelectedItemIndex(SelectedItem - 1);
         }
 
         if (SelectedItem != currentIndex && SelectedItem >= 0)
@@ -690,13 +695,27 @@ namespace RLGameGUI
 
         Items.clear();
 
+        auto itr = object.FindMember("decrement_button");
+        if (itr != object.MemberEnd() && itr->value.IsObject())
+            DecrementButton->Read(itr->value, document);
+
+        itr = object.FindMember("increment_button");
+        if (itr != object.MemberEnd() && itr->value.IsObject())
+            IncrementButton->Read(itr->value, document);
+
+        itr = object.FindMember("text_label");
+        if (itr != object.MemberEnd() && itr->value.IsObject())
+            TextLabel->Read(itr->value, document);
+
+        TextLabel->SetText("");
+
         if (itemsItr != object.MemberEnd() && itemsItr->value.IsArray())
         {
             for (auto& item : itemsItr->value.GetArray())
             {
                 if (item.IsString())
                 {
-                    Items.push_back(item.GetString());
+                    Add(item.GetString());
                 }
             }
         }
@@ -724,7 +743,75 @@ namespace RLGameGUI
 
         object.AddMember("items", valueList, alloc);
 
+        Value decrementButtonObject(kObjectType);
+        DecrementButton->Write(decrementButtonObject, document);
+        object.AddMember("decrement_button", decrementButtonObject, alloc);
+
+        Value incrementButtonObject(kObjectType);
+        IncrementButton->Write(incrementButtonObject, document);
+        object.AddMember("increment_button", incrementButtonObject, alloc);
+
+        Value textLableObject(kObjectType);
+        TextLabel->Write(textLableObject, document);
+        object.AddMember("text_label", textLableObject, alloc);
+
         return true;
+    }
+
+    bool GUICheckBox::SetChecked(bool check)
+    {
+        if (check == Checked)
+            return check;
+
+        Checked = check;
+        PostEvent(this, GUIElementEvent::Changed, &Checked);
+        OnCheckChanged();
+
+        return check;
+    }
+
+    bool GUICheckBox::Read(const rapidjson::Value& object, rapidjson::Document& document)
+    {
+        GUIPanel::Read(object, document);
+
+        return true;
+    }
+
+    bool GUICheckBox::Write(rapidjson::Value& object, rapidjson::Document& document)
+    {
+        GUIPanel::Write(object, document);
+    
+        return true;
+    }
+
+    void GUICheckBox::OnUpdate()
+    {
+        GUIPanel::OnUpdate();
+    }
+
+    void GUICheckBox::OnRender()
+    {
+        GUIPanel::OnRender();
+
+        if (Checked)
+        {
+            if (CheckTexture.Texture.Valid())
+                Draw(CheckTexture);
+            else
+                Draw(CheckTexture.Tint, BLANK, CheckTexture.Offset, CheckTexture.Scale);
+        }
+        else
+        {
+            if (UncheckedTexture.Texture.Valid())
+                Draw(UncheckedTexture);
+            else
+                Draw(UncheckedTexture.Tint, BLANK, UncheckedTexture.Offset, UncheckedTexture.Scale);
+        }
+    }
+
+    void GUICheckBox::OnClickStart()
+    {
+        SetChecked(!Checked);
     }
 }
 

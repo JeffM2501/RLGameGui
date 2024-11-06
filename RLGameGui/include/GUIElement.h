@@ -176,6 +176,8 @@ namespace RLGameGUI
 
 		std::string Id;
 
+		bool Serialize = true;
+
 		virtual const char* GetTypeName() const { return nullptr; }
 
 		void Update(Vector2 mousePosition);
@@ -234,6 +236,7 @@ namespace RLGameGUI
 		virtual void OnUpdate() {}
         virtual void OnPostChildUpdate() {}
 		virtual void OnRender() {}
+		virtual void OnPostRender() {}
 		virtual void OnPreResize() {}
 		virtual void OnResize() {}
 		virtual void OnAddChild(GUIElement::Ptr child) {}

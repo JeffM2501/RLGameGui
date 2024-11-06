@@ -167,7 +167,8 @@ namespace RLGameGUI
                     Value childArray(kArrayType);
                     for (auto child : element.Children)
                     {
-                        WriteElement(*child.get(), childArray, document);
+                        if (child->Serialize)
+                            WriteElement(*child.get(), childArray, document);
                     }
 
                     elementValue.AddMember("children", childArray, allocator);
@@ -188,7 +189,8 @@ namespace RLGameGUI
             Value rootArray(kArrayType);
             for (auto& child : screen->Children)
             {
-                WriteElement(*child, rootArray, document);
+                if (child->Serialize)
+                    WriteElement(*child, rootArray, document);
             }
 
             rootItem.AddMember("elements", rootArray, allocator);
