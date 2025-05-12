@@ -31,6 +31,8 @@
 #include "raymath.h"
 #include "GUITextureManager.h"
 
+#include "rlText.h"
+
 using namespace rapidjson;
 
 namespace RLGameGUI
@@ -53,9 +55,9 @@ namespace RLGameGUI
         return Texture;
     }
 
-    Font FontRecord::GetFont()
+    rltFont FontRecord::GetFont()
     {
-        if (IsFontValid(CachedFont))
+        if (!CachedFont.Ranges.empty())
             return CachedFont;
 
         CachedFont = FontManager::GetFont(Name, Size);
@@ -310,23 +312,21 @@ namespace RLGameGUI
         return true;
     }
 
-    static Rectangle ResizeTextBox(int& textSize, const std::string& text, Font& textFont, float& spacing, Rectangle& screenRect, RLGameGUI::AlignmentTypes hAlign, RLGameGUI::AlignmentTypes vAlign)
+    static Rectangle ResizeTextBox(float& textSize, const std::string& text, rltFont& textFont, Rectangle& screenRect, RLGameGUI::AlignmentTypes hAlign, RLGameGUI::AlignmentTypes vAlign)
     {
-        int defaultFontSize = 10;   // Default Font chars height in pixel
+        float defaultFontSize = 10;   // Default Font chars height in pixel
         if (textSize < defaultFontSize)
             textSize = defaultFontSize;
 
-        spacing = float(textSize) / defaultFontSize;
+        const rltFont *fontToUse = &textFont;
+        if (textFont.Ranges.empty())
+            fontToUse = &rltGetDefaultFont();
 
-        Font fontToUse = textFont;
-        if (textFont.texture.id == 0)
-            fontToUse = GetFontDefault();
-
-        Vector2 size = MeasureTextEx(fontToUse, text.c_str(), float(textSize), spacing);
+        Vector2 size = rltMeasureText(text, float(textSize), fontToUse);
 
         Rectangle textRect = { 0,0,0,0 };
 
-        textRect.width = size.x + spacing * 2;
+        textRect.width = size.x + fontToUse->DefaultSpacing * 2;
         switch (hAlign)
         {
         case RLGameGUI::AlignmentTypes::Maximum:
@@ -363,19 +363,26 @@ namespace RLGameGUI
 
     void GUILabel::OnResize()
     {
-        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), Spacing, ScreenRect, HorizontalAlignment, VerticalAlignment);
+        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), ScreenRect, HorizontalAlignment, VerticalAlignment);
     }
 
-    void DrawTextRect(const Font& fontToUse, const std::string& text, const Rectangle& rect, int size, float spacing, Color tint)
+    void DrawTextRect(const rltFont& fontToUse, const std::string& text, const Rectangle& rect, float size, Color tint, bool clip)
     {
-        BeginScissorMode(int(rect.x), int(rect.y), int(rect.width), int(rect.height));
-        DrawTextEx(fontToUse, text.c_str(), Vector2{ rect.x, rect.y }, float(size), spacing, tint);
-        EndScissorMode();
+        if (clip)
+            BeginScissorMode(int(rect.x), int(rect.y), int(rect.width), int(rect.height));
+        
+        Vector2 bounds = rltMeasureText(text, size, &fontToUse);
+        Vector2 center = Vector2{ rect.x + (rect.width / 2.0f), rect.y + (rect.height / 2.0f) };
+        Vector2 pos = center - (bounds * 0.5f);
+        rltDrawText(text, size, pos, tint, &fontToUse);
+
+        if (clip)
+            EndScissorMode();
     }
 
     void GUILabel::OnRender()
     {
-        DrawTextRect(TextFont.GetFont(), Text.c_str(), TextRect, TextFont.Size, Spacing, Tint);
+        DrawTextRect(TextFont.GetFont(), Text.c_str(), TextRect, TextFont.Size, Tint, ClipToRectangle);
     }
 
     bool GUILabel::Read(const Value& object, Document& document)
@@ -388,6 +395,8 @@ namespace RLGameGUI
         GUIScreenReader::ReadMember(object, "text_size", TextFont.Size);
 
         GUIScreenReader::ReadMember(object, "text", Text);
+
+        GUIScreenReader::ReadMember(object, "clip_to_rect", ClipToRectangle);
 
         GUIScreenReader::ReadAllignmentType(object, "horizontal_allignment", HorizontalAlignment);
         GUIScreenReader::ReadAllignmentType(object, "vertical_allignment", VerticalAlignment);
@@ -407,6 +416,8 @@ namespace RLGameGUI
         object.AddMember("text_size", TextFont.Size, alloc);
 
         object.AddMember("text", Value(Text.c_str(), alloc), alloc);
+
+        object.AddMember("clip_to_rect", ClipToRectangle, alloc);
 
         GUIScreenWriter::WriteAllignmentType(object, "horizontal_allignment", HorizontalAlignment, document);
         GUIScreenWriter::WriteAllignmentType(object, "vertical_allignment", VerticalAlignment, document);
@@ -454,7 +465,7 @@ namespace RLGameGUI
 
     void GUIButton::OnResize()
     {
-        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), Spacing, ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);
+        TextRect = ResizeTextBox(TextFont.Size, Text, TextFont.GetFont(), ScreenRect, AlignmentTypes::Center, AlignmentTypes::Center);
     }
 
     void GUIButton::OnRender()
@@ -500,7 +511,7 @@ namespace RLGameGUI
             rect.x += tx->Offset.x;
             rect.y += tx->Offset.y;
 
-            DrawTextRect(TextFont.GetFont(), Text.c_str(), rect, TextFont.Size, Spacing, labelColor);
+            DrawTextRect(TextFont.GetFont(), Text, rect, TextFont.Size, labelColor, true);
         }
     }
 

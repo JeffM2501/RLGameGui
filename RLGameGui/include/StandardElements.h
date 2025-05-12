@@ -32,6 +32,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "GUIScreenIO.h"
+#include "rlText.h"
 
 namespace RLGameGUI
 {
@@ -48,12 +49,12 @@ namespace RLGameGUI
     struct FontRecord
     {
         std::string Name;
-        int Size = 20;
+        float Size = 20;
 
-        Font GetFont();
+        rltFont GetFont();
 
     private:
-        Font CachedFont = { 0 };
+        rltFont CachedFont = { 0 };
     };
 
     enum class PanelFillModes
@@ -166,9 +167,11 @@ namespace RLGameGUI
 
         FontRecord TextFont;
 
+        bool ClipToRectangle = true;
+
         GUILabel() {}
         GUILabel(const std::string& text) : Text(text) {}
-        GUILabel(const std::string& text, const std::string& font, int size = 20) 
+        GUILabel(const std::string& text, const std::string& font, float size = 20)
         : Text(text)
         {
             TextFont.Name = font;
@@ -178,7 +181,7 @@ namespace RLGameGUI
         typedef std::shared_ptr<GUILabel> Ptr;
         inline static Ptr Create() { return std::make_shared<GUILabel>(); }
         inline static Ptr Create(const std::string& text) { return std::make_shared<GUILabel>(text); }
-        inline static Ptr Create(const std::string& text, const std::string& font, int size = 20) { return std::make_shared<GUILabel>(text, font, size); }
+        inline static Ptr Create(const std::string& text, const std::string& font, float size = 20) { return std::make_shared<GUILabel>(text, font, size); }
 
         AlignmentTypes HorizontalAlignment = AlignmentTypes::Minimum;
         AlignmentTypes VerticalAlignment = AlignmentTypes::Minimum;
@@ -196,7 +199,6 @@ namespace RLGameGUI
         std::string Text;
 
         Rectangle TextRect = { 0,0,0,0 };
-        float Spacing = 1;
     };
 
     class GUIButton : public GUIPanel

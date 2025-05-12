@@ -1,5 +1,7 @@
 #include "GUITextureManager.h"
 
+#include "rlText.h"
+
 #include <unordered_map>
 
 namespace RLGameGUI
@@ -45,22 +47,22 @@ namespace RLGameGUI
         struct FontRecord
         {
             std::string FontName;
-            std::unordered_map<int, Font> Fonts;
+            std::unordered_map<float, rltFont> Fonts;
         };
 
         std::unordered_map<std::string, FontRecord> FontCache;
 
-        Font LoadFont(const std::string name, int size)
+        rltFont LoadFont(const std::string name, float size)
         {
             std::string filePath = TextureManager::ResourceDir + "/" + name;
 
-            return ::LoadFontEx(filePath.c_str(), size, nullptr, 0);
+            return rltLoadFontTTF(filePath, size);
         }
 
-        Font GetFont(const std::string& name, int size)
+        rltFont GetFont(const std::string& name, float size)
         {
             if (name.empty())
-                return GetFontDefault();
+                return rltGetDefaultFont();
 
             auto fontItr = FontCache.find(name);
             if (fontItr == FontCache.end())
@@ -81,7 +83,7 @@ namespace RLGameGUI
             {
                 for (auto& [size, font] : fontGroup.Fonts)
                 {
-                    UnloadFont(font);
+                    rltUnloadFont(&font);
                 }
             }
             FontCache.clear();

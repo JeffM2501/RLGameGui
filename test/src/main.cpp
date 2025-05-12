@@ -55,7 +55,7 @@ int main( int argc, char** argv)
 	std::string imageButtonDisabled = ("button_square_depth_border.png");
 	std::string imageButtonPressed = ("ButtonBackground.active.png");
 	
-	int fontSize = 26;
+	float fontSize = 26;
 	std::string textFont = "fonts/BebasNeue Book.otf";
 
 	Color textColor = RAYWHITE;
@@ -113,12 +113,16 @@ int main( int argc, char** argv)
 
 	testCombo->IncrementButton->Background.Texture.Name = "pip_up.png";
 	testCombo->IncrementButton->Press.Texture.Name = "pip_down.png";
+    testCombo->IncrementButton->Disable.Texture.Name = "pip_down.png";
+    testCombo->IncrementButton->Disable.Tint = DARKGRAY;
 	testCombo->IncrementButton->RelativeBounds.Offset.x = 10;
 	testCombo->IncrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
     testCombo->IncrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f,false);
 
     testCombo->DecrementButton->Background.Texture.Name = "pip_up.png";
     testCombo->DecrementButton->Press.Texture.Name = "pip_down.png";
+	testCombo->DecrementButton->Disable.Texture.Name = "pip_down.png";
+	testCombo->DecrementButton->Disable.Tint = DARKGRAY;
 	testCombo->DecrementButton->RelativeBounds.Offset.x = 10;
     testCombo->DecrementButton->RelativeBounds.Size.X = RelativeValue(0.5f,false);
     testCombo->DecrementButton->RelativeBounds.Size.Y = RelativeValue(0.5f, false);

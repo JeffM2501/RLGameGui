@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-
 #include "raylib.h"
+#include "rlText.h"
 
 namespace RLGameGUI
 {
@@ -17,7 +17,7 @@ namespace RLGameGUI
 
     namespace FontManager
     {
-        Font GetFont(const std::string& name, int size);
+        rltFont GetFont(const std::string& name, float size);
 
         void UnloadAll();
     }
